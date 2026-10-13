@@ -1,0 +1,186 @@
+/* Patrones de la app BID sobre los tokens de Industry (industry.css). */
+
+body { min-height: 100vh; }
+a { color: var(--color-accent-700); }
+a:hover { color: var(--color-accent-800); }
+button { font-family: inherit; }
+select.input { appearance: auto; }
+
+/* — texto — */
+.kicker { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--color-accent-700); }
+.label { font-size: 11px; text-transform: uppercase; letter-spacing: .08em; color: var(--color-neutral-600); }
+.mono { font: 500 11px ui-monospace, Menlo, monospace; letter-spacing: .04em; color: var(--color-neutral-700); }
+.mono-12 { font: 500 12px ui-monospace, Menlo, monospace; color: var(--color-neutral-700); }
+.muted { color: var(--color-neutral-700); }
+.small { font-size: 13px; }
+.xs { font-size: 12px; }
+.err { font-size: 13px; color: #9a3b2e; }
+.num { font-variant-numeric: tabular-nums; }
+.figure { font-family: var(--font-heading); font-weight: 600; line-height: 1.15; font-variant-numeric: tabular-nums; }
+.stars { color: var(--color-accent-700); }
+h1, h2, h3, h4 { margin: 0; }
+
+/* — layout — */
+.stack { display: flex; flex-direction: column; }
+.row { display: flex; flex-wrap: wrap; align-items: center; }
+.between { justify-content: space-between; }
+.grow { flex: 1 1 auto; }
+
+/* — botones — */
+.btn-primary.blueprint { border-color: var(--color-accent); }
+.btn-lg { min-height: 42px; font-size: 16px; }
+.btn-md { min-height: 38px; padding: 0 18px; font-size: 15px; }
+.btn:disabled { pointer-events: none; }
+.linklike {
+  border: 0; background: transparent; padding: 0; cursor: pointer; color: var(--color-text);
+  font-family: var(--font-heading); font-weight: 600;
+}
+
+/* — control segmentado — */
+.segbar { display: inline-flex; flex-wrap: wrap; gap: 1px; background: var(--color-divider); border: 1px solid var(--color-divider); }
+.segbar.nowrap { flex-wrap: nowrap; }
+.segbar > button {
+  padding: 8px 14px; border: 0; font: 500 14px var(--font-body); cursor: pointer; white-space: nowrap;
+  background: var(--color-bg); color: var(--color-text);
+}
+.segbar.sm > button { padding: 7px 12px; font-size: 13px; }
+.segbar.xs > button { padding: 6px 12px; font-size: 13px; }
+.segbar > button:hover { background: color-mix(in srgb, var(--color-accent) 8%, var(--color-bg)); }
+.segbar > button[aria-pressed="true"] { background: var(--color-accent); color: var(--color-bg); }
+.segbar > button:focus-visible { outline-offset: -2px; }
+
+/* — chips multi-selección — */
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  padding: 6px 12px; font: 500 13px var(--font-body); cursor: pointer;
+  border: 1px solid var(--color-divider); background: transparent; color: var(--color-text);
+}
+.chip:hover { border-color: color-mix(in srgb, var(--color-text) 40%, transparent); }
+.chip[aria-pressed="true"] { border-color: var(--color-accent); background: var(--color-accent-100); color: var(--color-accent-800); }
+
+/* — rejilla de celdas (outline, no gap) — */
+.cells { display: grid; padding: 1px 0 0 1px; }
+.cells > * { outline: 1px solid var(--color-divider); background: var(--color-bg); }
+
+/* — ficha de datos dentro de un blueprint — */
+.facts { display: grid; }
+.facts > .fact { padding: 14px 16px; box-shadow: -1px 0 0 var(--color-divider); }
+
+/* — tarjetas clicables — */
+.card-btn { text-align: left; font: inherit; color: inherit; background: transparent; cursor: pointer; }
+.card-btn:hover { background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+
+/* — rayados — */
+.stripes { background: repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--color-text) 4%, transparent) 9px 10px); }
+.stripes-accent { background: repeating-linear-gradient(135deg, transparent 0 9px, color-mix(in srgb, var(--color-accent) 10%, transparent) 9px 10px); }
+
+/* — barras de valoración — */
+.bar { height: 4px; background: var(--color-neutral-200); }
+.bar > div { height: 100%; background: var(--color-accent); }
+.bar.lg { height: 5px; }
+
+/* — pestañas / navegación — */
+.tabbtn {
+  white-space: nowrap; padding: 8px 12px; border: 0; background: transparent; cursor: pointer;
+  font: 600 16px var(--font-heading); color: var(--color-text); text-decoration: none;
+  box-shadow: inset 0 -2px 0 transparent;
+}
+.tabbtn:hover { color: var(--color-accent-700); }
+.tabbtn[aria-current="page"] { color: var(--color-accent-700); box-shadow: inset 0 -2px 0 var(--color-accent); }
+.tabbtn.lg { padding: 10px 14px; font-size: 17px; }
+
+/* — cabecera de la app — */
+.app-header {
+  display: flex; flex-wrap: wrap; align-items: center; gap: 14px 28px;
+  padding: 14px clamp(16px, 3vw, 32px); border-bottom: 1px solid var(--color-divider);
+  background: var(--color-bg); position: sticky; top: 0; z-index: 5;
+}
+.app-main { max-width: 1240px; margin: 0 auto; padding: 28px clamp(16px, 3vw, 32px) 96px; }
+
+/* — pantalla de acceso — */
+.auth-bg {
+  min-height: 100vh; display: flex; flex-direction: column; align-items: center; padding: 48px 20px;
+  background-image:
+    linear-gradient(color-mix(in srgb, var(--color-text) 5%, transparent) 1px, transparent 1px),
+    linear-gradient(90deg, color-mix(in srgb, var(--color-text) 5%, transparent) 1px, transparent 1px);
+  background-size: 32px 32px;
+}
+
+/* — overlays — */
+.toast {
+  position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%); z-index: 40;
+  background: var(--color-accent-900); color: #f2f2f3; padding: 12px 18px; font-size: 14px;
+  box-shadow: var(--shadow-md); max-width: calc(100% - 32px); animation: toast-in .18s ease-out;
+}
+@keyframes toast-in { from { opacity: 0; transform: translate(-50%, 8px); } }
+
+.drawer-backdrop {
+  position: fixed; inset: 0; z-index: 20; display: flex; justify-content: flex-end;
+  background: color-mix(in srgb, var(--color-neutral-900) 45%, transparent); animation: fade .18s ease-out;
+}
+.drawer {
+  width: min(460px, 100%); height: 100%; overflow-y: auto; background: var(--color-bg);
+  box-shadow: var(--shadow-lg); padding: 24px; display: flex; flex-direction: column; gap: 20px;
+  animation: slide-in .2s ease-out;
+}
+@keyframes fade { from { opacity: 0; } }
+@keyframes slide-in { from { transform: translateX(24px); opacity: .6; } }
+.dialog-backdrop { z-index: 30; animation: fade .15s ease-out; }
+.dialog.blueprint { background: var(--color-bg); }
+
+/* — tablas — */
+.table th.r, .table td.r { text-align: right; }
+.scroll-x { overflow-x: auto; }
+
+/* — logo de certificado — */
+.cert-logo { width: 60px; height: 60px; flex: none; display: grid; place-items: center; background: var(--color-bg); }
+.cert-logo .img { width: 48px; height: 48px; background: center / contain no-repeat; }
+.cert-logo .code { font: 600 14px/1 var(--font-heading); text-align: center; color: var(--color-accent-700); padding: 0 4px; }
+
+/* — dropzone — */
+.dropzone { border-style: dashed; padding: 24px 18px; display: flex; flex-direction: column; align-items: center; gap: 10px; text-align: center; }
+.dropzone.drag { background: var(--color-accent-100); }
+
+.loading { min-height: 100vh; display: grid; place-items: center; color: var(--color-neutral-600); font-size: 13px; letter-spacing: .1em; text-transform: uppercase; }
+
+/* fuentes servidas por next/font */
+html.fonts { --font-heading: var(--font-bc), "Barlow Condensed", system-ui, sans-serif; --font-body: var(--font-b), "Barlow", system-ui, sans-serif; }
+
+/* — selector de estrellas — */
+.star-btn { border: 0; background: transparent; padding: 0 2px; font-size: 24px; line-height: 1; cursor: pointer; color: var(--color-neutral-300); }
+.star-btn[data-on="true"] { color: var(--color-accent-700); }
+.star-btn:hover { color: var(--color-accent-500); }
+.star-btn:focus-visible { outline-offset: 0; }
+
+/* — campana de avisos — */
+.bell-wrap { position: relative; }
+.bell-btn { position: relative; color: var(--color-text); }
+.bell-badge {
+  position: absolute; top: 2px; right: 0; min-width: 17px; height: 17px; padding: 0 4px;
+  display: grid; place-items: center; font: 600 11px/1 var(--font-body);
+  background: var(--color-accent); color: var(--color-bg);
+}
+.bell-panel {
+  position: absolute; right: 0; top: calc(100% + 10px); z-index: 10; width: 380px; max-width: calc(100vw - 32px);
+  background: var(--color-bg); box-shadow: var(--shadow-md); animation: fade .12s ease-out;
+}
+.bell-list { list-style: none; margin: 0; padding: 0; max-height: min(70vh, 520px); overflow-y: auto; }
+.bell-item {
+  width: 100%; display: grid; grid-template-columns: 8px 1fr; gap: 10px; align-items: start; text-align: left;
+  padding: 12px 14px; border: 0; border-bottom: 1px solid color-mix(in srgb, var(--color-text) 8%, transparent);
+  background: transparent; color: inherit; font: inherit; cursor: pointer;
+}
+.bell-item:hover { background: color-mix(in srgb, var(--color-accent) 6%, transparent); }
+.bell-item[data-unread="true"] { background: color-mix(in srgb, var(--color-accent) 7%, transparent); }
+.bell-dot { width: 8px; height: 8px; margin-top: 4px; }
+.bell-item[data-unread="true"] .bell-dot { background: var(--color-accent); }
+.bell-item:focus-visible { outline-offset: -2px; }
+.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
+@media (max-width: 560px) {
+  .bell-wrap { position: static; }
+  .bell-panel { position: fixed; left: 16px; right: 16px; top: 64px; width: auto; max-width: none; }
+}
+
+/* — enlace a la cuenta en la cabecera — */
+.account-link { font-size: 13px; color: var(--color-neutral-700); text-decoration: none; }
+.account-link:hover, .account-link[aria-current="page"] { color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; }

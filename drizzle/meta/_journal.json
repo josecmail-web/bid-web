@@ -1,0 +1,34 @@
+{
+  "version": "7",
+  "dialect": "postgresql",
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1791783044870,
+      "tag": "0000_init",
+      "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1791869634047,
+      "tag": "0001_reviews_unique_per_tender",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1791871172785,
+      "tag": "0002_auth_tokens_attempts",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1791887136994,
+      "tag": "0003_award_fees_terms",
+      "breakpoints": true
+    }
+  ]
+}

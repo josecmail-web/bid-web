@@ -1,0 +1,1 @@
+ALTER TABLE "reviews" ADD CONSTRAINT "reviews_tender_from_unique" UNIQUE("tender_id","from_company_id");
