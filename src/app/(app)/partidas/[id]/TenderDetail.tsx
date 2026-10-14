@@ -42,7 +42,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
     return {
       id: I.id, I, av, isMin, total: tot[j], certCodes,
       rating: I.r ? av.toFixed(1) : "—",
-      jobs: I.jobs ? I.jobs + " obras" : "Nueva en BID",
+      jobs: I.jobs ? I.jobs + " obras" : "Nueva en Bidra",
       vsMin: isMin ? "Oferta más baja" : pct(tot[j] / minT).replace(" %", " % sobre la más baja"),
       diff: T.ref ? pct(tot[j] / T.ref) + " vs referencia" : "",
       awarded: T.awardedCompanyId === I.id,
@@ -243,7 +243,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
                       </div>
                     </div>
                     <div>
-                      {c.I.r ? <CatBars r={c.I.r} /> : <span className="small muted">Sin valoraciones todavía · primera obra en BID</span>}
+                      {c.I.r ? <CatBars r={c.I.r} /> : <span className="small muted">Sin valoraciones todavía · primera obra en Bidra</span>}
                     </div>
                     <div className="row" style={{ justifyContent: "flex-end", gap: 14 }}>
                       <div style={{ textAlign: "right" }}>

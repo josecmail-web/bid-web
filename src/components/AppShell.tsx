@@ -36,7 +36,7 @@ export function AppShell({ user, notifications, children }: { user: ShellUser; n
       <header className="app-header">
         <Link href={homeFor(user.role)} aria-label="Inicio">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img src="/bid-logo.png" alt="BID" style={{ height: 28, width: "auto" }} />
+          <img src="/bidra-logo.png" alt="Bidra Pro" className="app-logo" />
         </Link>
         <nav className="row" style={{ gap: 2 }}>
           {nav.map(([href, label]) => (
@@ -88,7 +88,7 @@ export function AppShell({ user, notifications, children }: { user: ShellUser; n
         <div style={{ background: "var(--color-accent-100)", color: "var(--color-accent-800)", borderBottom: "1px solid var(--color-divider)", padding: "10px clamp(16px,3vw,32px)", fontSize: 14 }}>
           {user.verification === "pending"
             ? `${user.companyName} está en revisión. Validamos CIF y documentación en 24–48 h laborables; hasta entonces no podrás ${user.role === "industrial" ? "pujar" : "publicar partidas"}.`
-            : "No hemos podido verificar tu empresa. Contacta con el equipo de BID."}
+            : "No hemos podido verificar tu empresa. Contacta con el equipo de Bidra."}
         </div>
       )}
       <main className="app-main" aria-busy={pending}>{children}</main>

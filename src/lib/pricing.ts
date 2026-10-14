@@ -1,7 +1,7 @@
 import { eur } from "./format";
 
 /**
- * Tarifa de BID: comisión de éxito al industrial adjudicatario (ver producto.md › Monetización).
+ * Tarifa de Bidra: comisión de éxito al industrial adjudicatario (ver producto.md › Monetización).
  * Durante el piloto la comisión se calcula y registra, pero no se cobra.
  */
 

@@ -27,7 +27,7 @@ async function nextNumber(db: DB) {
 
 async function requireVerified() {
   const user = await requireAction("promotora");
-  if (user.verification !== "approved") throw new UserError("Tu empresa está pendiente de verificación: podrás publicar cuando BID la apruebe.");
+  if (user.verification !== "approved") throw new UserError("Tu empresa está pendiente de verificación: podrás publicar cuando Bidra la apruebe.");
   return user;
 }
 
@@ -194,8 +194,8 @@ export async function awardTender(tenderIdArg: string, companyId: string): Promi
     const total = await bidTotal(db, bid.id);
     const fee = await recordAwardFee(db, { tenderId: t.id, bidId: bid.id, companyId, total });
     const feeText = PILOT
-      ? ` Comisión BID: ${eur2(fee.fee)}, exenta durante el piloto.`
-      : ` Comisión BID: ${eur2(fee.fee)} (${TARIFF_TEXT}).`;
+      ? ` Comisión Bidra: ${eur2(fee.fee)}, exenta durante el piloto.`
+      : ` Comisión Bidra: ${eur2(fee.fee)} (${TARIFF_TEXT}).`;
 
     const losers = await db.select({ id: s.bids.companyId }).from(s.bids).where(and(eq(s.bids.tenderId, t.id), ne(s.bids.companyId, companyId)));
     await notify(db, [companyId], "tender_awarded", `Te han adjudicado ${t.id} · ${t.title} por ${eur(total)}.${feeText}`, `/industrial/paquetes/${t.id}`);

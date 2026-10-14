@@ -33,8 +33,8 @@ export async function changePassword(current: string, next: string): Promise<Act
     await endSessions(u.id, true);
     await sendEmail({
       to: u.email,
-      subject: "Tu contraseña de BID ha cambiado",
-      text: "Tu contraseña de BID se ha cambiado y hemos cerrado las demás sesiones abiertas.\n\nSi no has sido tú, recupera el acceso y avisa al equipo de BID.",
+      subject: "Tu contraseña de Bidra ha cambiado",
+      text: "Tu contraseña de Bidra se ha cambiado y hemos cerrado las demás sesiones abiertas.\n\nSi no has sido tú, recupera el acceso y avisa al equipo de Bidra.",
       action: { label: "Recuperar el acceso", url: await appUrl("/recuperar") },
     });
     return { ok: true };
@@ -50,7 +50,7 @@ export async function inviteMember(emailRaw: string): Promise<ActionResult<{ ema
     if (!EMAIL_RE.test(email)) throw new UserError("Introduce un email válido.");
     const db = await getDb();
     const [exists] = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.email, email));
-    if (exists) throw new UserError("Ese email ya tiene una cuenta en BID.");
+    if (exists) throw new UserError("Ese email ya tiene una cuenta en Bidra.");
     const [pendingN] = await db
       .select({ n: count() })
       .from(s.authTokens)
@@ -64,8 +64,8 @@ export async function inviteMember(emailRaw: string): Promise<ActionResult<{ ema
     const token = await createToken({ kind: "invite", email, companyId: user.companyId, createdBy: user.userId, hours: 24 * 7 });
     await sendEmail({
       to: email,
-      subject: `${user.companyName} te invita a su equipo en BID`,
-      text: `${user.email} te ha invitado a unirte a ${user.companyName} en BID, la plataforma de partidas de obra a puja ciega.\n\nLa invitación caduca en 7 días.`,
+      subject: `${user.companyName} te invita a su equipo en Bidra`,
+      text: `${user.email} te ha invitado a unirte a ${user.companyName} en Bidra, la plataforma de partidas de obra a puja ciega.\n\nLa invitación caduca en 7 días.`,
       action: { label: "Crear mi acceso", url: await appUrl("/invitacion/" + token) },
     });
     refresh();
@@ -115,7 +115,7 @@ export async function acceptInvite(token: string, password: string, acceptedTerm
     const [c] = await db.select({ type: s.companies.type }).from(s.companies).where(eq(s.companies.id, t.companyId));
     if (!c) throw new UserError("La empresa ya no existe.");
     const [exists] = await db.select({ id: s.users.id }).from(s.users).where(eq(s.users.email, t.email));
-    if (exists) throw new UserError("Ese email ya tiene una cuenta en BID. Inicia sesión.");
+    if (exists) throw new UserError("Ese email ya tiene una cuenta en Bidra. Inicia sesión.");
     if (!(await consumeToken(t.id))) throw new UserError("La invitación ya se ha usado.");
     const role: Role = c.type;
     const [u] = await db

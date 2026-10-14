@@ -174,7 +174,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
             <span>{T.owner} se pondrá en contacto contigo para la contratación.</span>
             {T.fee && (
               <span style={{ fontSize: 13 }}>
-                Comisión BID: {eur2(T.fee.amount)}{T.fee.status === "waived_pilot" ? " · exenta durante el piloto" : ""}
+                Comisión Bidra: {eur2(T.fee.amount)}{T.fee.status === "waived_pilot" ? " · exenta durante el piloto" : ""}
               </span>
             )}
           </span>
@@ -217,7 +217,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
       )}
       {T.status === "abierta" && !T.verified && (
         <div className="small" style={{ padding: "12px 16px", border: "1px solid var(--color-divider)" }}>
-          Tu empresa está pendiente de verificación: podrás enviar la puja cuando BID la apruebe.
+          Tu empresa está pendiente de verificación: podrás enviar la puja cuando Bidra la apruebe.
         </div>
       )}
 
@@ -350,7 +350,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
               <span className="stack small muted" style={{ maxWidth: 520, gap: 4 }}>
                 <span>Puja ciega: nadie más ve tu oferta, ni sabes cuántas pujas hay. Las ofertas se abren al cierre.</span>
                 <span className="xs">
-                  Pujar es gratis. Si te adjudican, la comisión de BID es el {TARIFF_TEXT}
+                  Pujar es gratis. Si te adjudican, la comisión de Bidra es el {TARIFF_TEXT}
                   {total > 0 && <> — con este total, {eur2(feeFor(total))}</>}
                   {PILOT ? ". Durante el piloto no se cobra." : "."}{" "}
                   <Link href="/condiciones" target="_blank">Condiciones</Link>

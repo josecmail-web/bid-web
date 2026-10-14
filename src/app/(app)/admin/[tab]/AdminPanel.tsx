@@ -48,7 +48,7 @@ export function AdminPanel({ data, tab }: { data: AdminDataDTO; tab: Tab }) {
   return (
     <div className="stack" style={{ gap: 24 }} aria-busy={pending}>
       <div>
-        <div className="kicker">Administración BID</div>
+        <div className="kicker">Administración Bidra</div>
         <h1 style={{ marginTop: 2 }}>Panel</h1>
       </div>
 

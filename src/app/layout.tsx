@@ -8,7 +8,7 @@ const barlow = Barlow({ subsets: ["latin"], weight: ["400", "500", "700"], varia
 const barlowCondensed = Barlow_Condensed({ subsets: ["latin"], weight: ["400", "600"], variable: "--font-bc" });
 
 export const metadata: Metadata = {
-  title: "BID · Build Invest Direct",
+  title: "Bidra Pro",
   description: "Partidas de obra a puja ciega entre promotoras e industriales verificados.",
 };
 

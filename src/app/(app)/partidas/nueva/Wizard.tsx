@@ -193,7 +193,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
             >
               <span className="figure" style={{ fontSize: 22 }}>{W.fileName ? "Reemplazar el Excel de mediciones" : "Sube el Excel de mediciones"}</span>
               <span className="small muted" style={{ maxWidth: 520, textWrap: "pretty" }}>
-                Arrastra aquí un .xlsx, .xls o .csv con código, descripción, unidad y medición. BID detecta las columnas y clasifica cada partida por sector.
+                Arrastra aquí un .xlsx, .xls o .csv con código, descripción, unidad y medición. Bidra detecta las columnas y clasifica cada partida por sector.
               </span>
               <div className="row" style={{ gap: 10, justifyContent: "center", marginTop: 4 }}>
                 <PrimaryButton className="btn-md" disabled={pending} onClick={() => fileRef.current?.click()}>{pending ? "Leyendo…" : "Seleccionar Excel"}</PrimaryButton>

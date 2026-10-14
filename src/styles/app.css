@@ -1,4 +1,4 @@
-/* Patrones de la app BID sobre los tokens de Industry (industry.css). */
+/* Patrones de la app Bidra sobre los tokens de Industry (industry.css). */
 
 body { min-height: 100vh; }
 a { color: var(--color-accent-700); }
@@ -189,3 +189,7 @@ html.fonts { --font-heading: var(--font-bc), "Barlow Condensed", system-ui, sans
 .item-long { margin-top: 4px; font-size: 13px; }
 .item-long > summary { cursor: pointer; width: fit-content; color: var(--color-accent-700); font-size: 12px; }
 .item-long > div { margin-top: 6px; white-space: pre-line; color: var(--color-neutral-700); line-height: 1.5; max-width: 72ch; }
+
+/* logo de la cabecera */
+.app-logo { height: 34px; width: auto; display: block; }
+@media (max-width: 560px) { .app-logo { height: 28px; } }

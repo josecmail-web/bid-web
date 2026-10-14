@@ -18,7 +18,7 @@ export function proxy(req: NextRequest) {
     if (given !== password) {
       return new NextResponse("Acceso restringido", {
         status: 401,
-        headers: { "WWW-Authenticate": 'Basic realm="BID", charset="UTF-8"', "X-Robots-Tag": "noindex, nofollow" },
+        headers: { "WWW-Authenticate": 'Basic realm="Bidra", charset="UTF-8"', "X-Robots-Tag": "noindex, nofollow" },
       });
     }
   }

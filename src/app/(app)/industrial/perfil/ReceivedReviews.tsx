@@ -33,7 +33,7 @@ export function ReceivedReviews({ reviews }: { reviews: ReceivedReviewDTO[] }) {
       if (!r.ok) return setErr(r.error);
       setReporting(null);
       setReason("");
-      flash("Valoración reportada. El equipo de BID la revisará y te avisaremos.");
+      flash("Valoración reportada. El equipo de Bidra la revisará y te avisaremos.");
     });
   };
 
@@ -85,7 +85,7 @@ export function ReceivedReviews({ reviews }: { reviews: ReceivedReviewDTO[] }) {
             <div className="dialog-title">Reportar valoración</div>
             <div className="dialog-body stack" style={{ gap: 10 }}>
               <span className="small muted">{reporting.by} · {reporting.obra} · {dec1(avg(reporting.r))} ★</span>
-              <span>El equipo de BID revisará la valoración y decidirá si se mantiene o se oculta de tu perfil. Solo puedes reportarla una vez.</span>
+              <span>El equipo de Bidra revisará la valoración y decidirá si se mantiene o se oculta de tu perfil. Solo puedes reportarla una vez.</span>
               <div className="field">
                 <label htmlFor="report-reason">Motivo</label>
                 <textarea

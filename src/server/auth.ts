@@ -77,7 +77,7 @@ export const getSession = cache(async (): Promise<SessionUser | null> => {
     .leftJoin(s.companies, eq(s.companies.id, s.users.companyId))
     .where(and(eq(s.sessions.id, hashToken(token)), gt(s.sessions.expiresAt, new Date())));
   if (!row) return null;
-  return { ...row, companyName: row.companyName ?? "Equipo BID", demo: isDemo() };
+  return { ...row, companyName: row.companyName ?? "Equipo Bidra", demo: isDemo() };
 });
 
 /** Para páginas: redirige al login o a la home del rol si no corresponde. */

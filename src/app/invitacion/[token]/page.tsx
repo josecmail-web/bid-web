@@ -23,7 +23,7 @@ export default async function InvitacionPage({ params }: { params: Promise<{ tok
         </div>
         {t && company ? (
           <>
-            <p className="muted" style={{ margin: 0 }}>Vas a entrar en BID como <b style={{ fontWeight: 500, color: "var(--color-text)" }}>{t.email}</b>. Elige tu contraseña.</p>
+            <p className="muted" style={{ margin: 0 }}>Vas a entrar en Bidra como <b style={{ fontWeight: 500, color: "var(--color-text)" }}>{t.email}</b>. Elige tu contraseña.</p>
             <AcceptForm token={token} email={t.email} />
           </>
         ) : (

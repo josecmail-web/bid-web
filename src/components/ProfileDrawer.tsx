@@ -55,7 +55,7 @@ export function ProfileDrawer() {
                 {P.since ? " · en activo desde " + P.since : ""}
               </div>
               <div className="row" style={{ gap: 6, marginTop: 8 }}>
-                <span className="tag tag-accent">Verificada por BID</span>
+                <span className="tag tag-accent">Verificada por Bidra</span>
               </div>
             </div>
 
@@ -102,7 +102,7 @@ export function ProfileDrawer() {
                 )}
               </>
             ) : (
-              <p className="muted">Empresa nueva en BID: aún no tiene obras valoradas.</p>
+              <p className="muted">Empresa nueva en Bidra: aún no tiene obras valoradas.</p>
             )}
           </>
         )}

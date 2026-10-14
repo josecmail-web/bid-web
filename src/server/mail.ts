@@ -4,8 +4,8 @@ import { headers } from "next/headers";
  * Envío de emails con Resend (https://resend.com), por su API HTTP.
  *
  *   RESEND_API_KEY     clave de la API. Si falta, los emails se escriben en la consola del servidor.
- *   EMAIL_FROM         remitente, p. ej. "BID <avisos@tudominio.es>" (dominio verificado en Resend).
- *                      Sin dominio verificado: "BID <onboarding@resend.dev>" (solo entrega a tu propio email).
+ *   EMAIL_FROM         remitente, p. ej. "Bidra <avisos@tudominio.es>" (dominio verificado en Resend).
+ *                      Sin dominio verificado: "Bidra <onboarding@resend.dev>" (solo entrega a tu propio email).
  *   EMAIL_REDIRECT_TO  (desarrollo/demo) desvía TODOS los emails a esta dirección. Con BID_DEMO=1 es
  *                      obligatorio para enviar de verdad: los datos de ejemplo tienen emails inventados.
  *
@@ -35,7 +35,7 @@ export async function sendEmail(email: Email) {
     // Nunca enviar de verdad a las empresas inventadas de la demo
     .filter((addr) => !(key && !redirect && DEMO_DOMAIN.test(addr)))
     .map((addr) => ({
-      from: process.env.EMAIL_FROM || "BID <onboarding@resend.dev>",
+      from: process.env.EMAIL_FROM || "Bidra <onboarding@resend.dev>",
       to: [redirect || addr],
       subject: redirect ? `[para ${addr}] ${email.subject}` : email.subject,
       text: plain(email),
@@ -73,12 +73,13 @@ export async function sendEmail(email: Email) {
 /* — plantillas — */
 
 function plain(e: Email) {
-  return e.text + (e.action ? `\n\n${e.action.label}: ${e.action.url}` : "") + "\n\n—\nBID · Build Invest Direct";
+  return e.text + (e.action ? `\n\n${e.action.label}: ${e.action.url}` : "") + "\n\n—\nBidra Pro · Partidas de obra a puja ciega";
 }
 
 const esc = (s: string) => s.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-/** HTML sencillo con la estética de BID (Industry): fondo claro, acento acero, sin esquinas redondeadas. */
+/** HTML sencillo con la estética de Bidra (Industry): fondo claro, acento acero, sin esquinas redondeadas.
+ *  El logo va como texto: las imágenes de la web no cargarían en el correo si la demo está tras contraseña. */
 function html(e: Email) {
   const paras = e.text
     .split(/\n\s*\n/)
@@ -92,9 +93,9 @@ function html(e: Email) {
 <body style="margin:0;padding:0;background:#f2f2f3;font-family:Arial,Helvetica,sans-serif">
   <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f2f2f3"><tr><td align="center" style="padding:28px 16px">
     <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;border:1px solid #d4d4d7;background:#f2f2f3">
-      <tr><td style="padding:18px 24px;border-bottom:1px solid #d4d4d7;font-weight:700;font-size:20px;letter-spacing:.12em;color:#1d1f20">BID</td></tr>
+      <tr><td style="padding:18px 24px;border-bottom:1px solid #d4d4d7;font-weight:700;font-size:24px;letter-spacing:-.01em;color:#1b2d40">bidra <span style="font-weight:400;font-size:11px;letter-spacing:.3em;color:#1d1f20">PRO</span></td></tr>
       <tr><td style="padding:24px">${paras}${button}</td></tr>
-      <tr><td style="padding:14px 24px;border-top:1px solid #d4d4d7;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7a7a7d">Build · Invest · Direct</td></tr>
+      <tr><td style="padding:14px 24px;border-top:1px solid #d4d4d7;font-size:11px;letter-spacing:.12em;text-transform:uppercase;color:#7a7a7d">Partidas de obra a puja ciega</td></tr>
     </table>
   </td></tr></table>
 </body></html>`;

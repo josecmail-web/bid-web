@@ -50,8 +50,8 @@ export async function requestPasswordReset(emailRaw: string): Promise<ActionResu
       const token = await createToken({ kind: "reset", email, userId: u.id, hours: 1 });
       await sendEmail({
         to: email,
-        subject: "Restablece tu contraseña de BID",
-        text: "Hemos recibido una petición para cambiar la contraseña de tu cuenta de BID.\n\nEl enlace caduca en 1 hora y solo sirve una vez. Si no lo has pedido tú, ignora este email: tu contraseña no cambia.",
+        subject: "Restablece tu contraseña de Bidra",
+        text: "Hemos recibido una petición para cambiar la contraseña de tu cuenta de Bidra.\n\nEl enlace caduca en 1 hora y solo sirve una vez. Si no lo has pedido tú, ignora este email: tu contraseña no cambia.",
         action: { label: "Elegir contraseña nueva", url: await appUrl("/restablecer/" + token) },
       });
     }
@@ -72,9 +72,9 @@ export async function resetPassword(token: string, password: string): Promise<Ac
     await endSessions(t.userId, false);
     await sendEmail({
       to: t.email,
-      subject: "Tu contraseña de BID ha cambiado",
-      text: "Tu contraseña de BID se ha cambiado y hemos cerrado todas las sesiones abiertas.\n\nSi no has sido tú, recupera el acceso y avisa al equipo de BID.",
-      action: { label: "Entrar en BID", url: await appUrl("/login") },
+      subject: "Tu contraseña de Bidra ha cambiado",
+      text: "Tu contraseña de Bidra se ha cambiado y hemos cerrado todas las sesiones abiertas.\n\nSi no has sido tú, recupera el acceso y avisa al equipo de Bidra.",
+      action: { label: "Entrar en Bidra", url: await appUrl("/login") },
     });
     return { ok: true };
   });

@@ -26,7 +26,7 @@ export interface SeedIndustrial {
   trades: string[];
   /** media objetivo por categoría; null = sin valoraciones */
   r: R4 | null;
-  /** obras valoradas en BID */
+  /** obras valoradas en Bidra */
   jobs: number;
   certs: SeedCert[];
   reviews: SeedReview[];

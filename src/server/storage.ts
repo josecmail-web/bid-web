@@ -10,7 +10,7 @@ import type { SessionUser } from "./auth";
  *
  * Las claves codifican el permiso de lectura:
  *   logos/<companyId>/<uuid>.<ext>     → cualquier usuario con sesión (se muestran en perfiles públicos)
- *   certs|docs|projects/<companyId>/…  → la propia empresa y el equipo BID
+ *   certs|docs|projects/<companyId>/…  → la propia empresa y el equipo Bidra
  */
 
 export type Area = "logos" | "certs" | "docs" | "projects";

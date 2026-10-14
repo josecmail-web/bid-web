@@ -49,12 +49,12 @@ const EUR_FMT = '#,##0.00 "€"';
 /** Excel para presupuestar un paquete: partidas + columna de precio + fórmulas de importe y total. */
 export function bidWorkbook(T: IndustrialTenderDTO): Buffer {
   const head: (string | number)[][] = [
-    ["BID · Build Invest Direct — presupuesto por partidas"],
+    ["Bidra Pro — presupuesto por partidas"],
     ["Paquete", `${T.id} · ${T.title}`],
     ["Obra", `${T.obra} · ${T.loc}`],
     ["Promotora", T.owner],
     ["Cierre de la puja", closeLabel(T.closesAt)],
-    ["Cómo usarlo", "Rellena la columna E en € sin IVA y súbelo en BID con «Subir Excel con precios». No cambies los códigos."],
+    ["Cómo usarlo", "Rellena la columna E en € sin IVA y súbelo en Bidra con «Subir Excel con precios». No cambies los códigos."],
     [],
     ["Código", "Descripción", "Ud", "Medición", "Precio unitario (€)", "Importe (€)", "Descripción completa"],
   ];

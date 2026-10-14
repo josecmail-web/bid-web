@@ -38,7 +38,7 @@ export default function RecuperarPage() {
           </p>
         ) : (
           <>
-            <p className="muted" style={{ margin: 0 }}>Escribe el email con el que entras en BID y te enviaremos un enlace para elegir una contraseña nueva.</p>
+            <p className="muted" style={{ margin: 0 }}>Escribe el email con el que entras en Bidra y te enviaremos un enlace para elegir una contraseña nueva.</p>
             <Field label="Email">
               <input className="input" type="email" autoComplete="email" required value={email} onChange={(e) => { setEmail(e.target.value); setErr(""); }} />
             </Field>

@@ -14,7 +14,7 @@ import { safe, str, UserError } from "../action-utils";
 import { CERTS } from "@/lib/catalog";
 import type { ActionResult } from "@/lib/types";
 
-/** Alta (o reenvío tras rechazo) de un certificado: queda pendiente de validación por BID. */
+/** Alta (o reenvío tras rechazo) de un certificado: queda pendiente de validación por Bidra. */
 export async function addCertificate(fd: FormData): Promise<ActionResult> {
   return safe(async () => {
     const user = await requireAction("industrial");
@@ -110,7 +110,7 @@ export async function importBidPrices(tenderId: string, fd: FormData): Promise<P
   }) as Promise<PriceImport>;
 }
 
-/** Reporta una valoración recibida para que la revise el equipo de BID (una vez por valoración). */
+/** Reporta una valoración recibida para que la revise el equipo de Bidra (una vez por valoración). */
 export async function reportReview(reviewId: string, reason: string): Promise<ActionResult> {
   return safe(async () => {
     const user = await requireAction("industrial");

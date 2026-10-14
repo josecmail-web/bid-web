@@ -3,7 +3,7 @@ import { parsePrice } from "./format";
 import type { TenderItem } from "./types";
 
 /**
- * Lectura de una hoja de precios (la plantilla que exporta BID, o la hoja propia del industrial
+ * Lectura de una hoja de precios (la plantilla que exporta Bidra, o la hoja propia del industrial
  * con columnas parecidas). Función pura: el servidor le pasa las filas ya leídas del Excel.
  */
 
@@ -49,7 +49,7 @@ export function readPriceRows(aoa: Cell[][], items: TenderItem[], fileName: stri
     };
     break;
   }
-  if (hi < 0) return { ok: false, error: `No encontramos la columna «Precio unitario» en ${fileName}. Usa el Excel que descargas desde BID.` };
+  if (hi < 0) return { ok: false, error: `No encontramos la columna «Precio unitario» en ${fileName}. Usa el Excel que descargas desde Bidra.` };
 
   const keys = items.map((it) => codeKey(it.code));
   const uniqueCodes = col.code >= 0 && new Set(keys).size === keys.length && keys.every(Boolean);

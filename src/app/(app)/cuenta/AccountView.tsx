@@ -9,7 +9,7 @@ import type { AccountDTO } from "@/lib/types";
 import { Blueprint, Field, PrimaryButton } from "@/components/ui";
 
 const VERIF: Record<"pending" | "approved" | "rejected", [string, string]> = {
-  approved: ["Verificada por BID", "tag tag-accent"],
+  approved: ["Verificada por Bidra", "tag tag-accent"],
   pending: ["En revisión", "tag tag-outline"],
   rejected: ["No verificada", "tag tag-neutral"],
 };
@@ -53,7 +53,7 @@ export function AccountView({ data }: { data: AccountDTO }) {
     <div className="stack" style={{ gap: 30, maxWidth: 880 }}>
       <div>
         <div className="kicker">Tu cuenta</div>
-        <h1 style={{ marginTop: 2 }}>{c ? c.name : "Equipo BID"}</h1>
+        <h1 style={{ marginTop: 2 }}>{c ? c.name : "Equipo Bidra"}</h1>
         <div className="muted">{data.me.email}</div>
       </div>
 
@@ -79,7 +79,7 @@ export function AccountView({ data }: { data: AccountDTO }) {
               </div>
             ))}
           </div>
-          <span className="xs muted">Para cambiar la razón social o el CIF escribe al equipo de BID: hay que volver a verificar la documentación.</span>
+          <span className="xs muted">Para cambiar la razón social o el CIF escribe al equipo de Bidra: hay que volver a verificar la documentación.</span>
         </div>
       )}
 
@@ -92,7 +92,7 @@ export function AccountView({ data }: { data: AccountDTO }) {
           <div className="scroll-x">
             <table className="table" style={{ minWidth: 560 }}>
               <thead>
-                <tr><th>Persona</th><th>Último acceso</th><th>En BID desde</th><th /></tr>
+                <tr><th>Persona</th><th>Último acceso</th><th>En Bidra desde</th><th /></tr>
               </thead>
               <tbody>
                 {data.members.map((m) => (
@@ -158,7 +158,7 @@ export function AccountView({ data }: { data: AccountDTO }) {
         <div className="dialog-backdrop" onClick={() => !pending && setRemoving(null)}>
           <Blueprint className="dialog" role="dialog" aria-modal="true" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
             <div className="dialog-title">¿Quitar a {removing.email}?</div>
-            <div className="dialog-body">Perderá el acceso a {c?.name} en BID y se cerrarán sus sesiones. Lo que haya publicado o pujado se mantiene.</div>
+            <div className="dialog-body">Perderá el acceso a {c?.name} en Bidra y se cerrarán sus sesiones. Lo que haya publicado o pujado se mantiene.</div>
             <div className="dialog-actions">
               <button className="btn btn-secondary" onClick={() => setRemoving(null)} disabled={pending}>Cancelar</button>
               <button

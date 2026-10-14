@@ -36,7 +36,7 @@ export async function rejectCompany(id: string): Promise<ActionResult<{ name: st
     await requireAction("admin");
     const { db, c } = await pendingCompany(id);
     await db.update(s.companies).set({ verification: "rejected" }).where(eq(s.companies.id, id));
-    await notify(db, [id], "company_rejected", "No hemos podido verificar tu empresa. Contacta con BID para más información.");
+    await notify(db, [id], "company_rejected", "No hemos podido verificar tu empresa. Contacta con Bidra para más información.");
     refresh();
     return { ok: true, name: c.name };
   });

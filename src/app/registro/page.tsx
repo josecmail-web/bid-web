@@ -133,7 +133,7 @@ export default function RegistroPage() {
 
         {step === "type" && (
           <>
-            <h2 style={{ fontSize: 30 }}>¿Cómo vas a usar BID?</h2>
+            <h2 style={{ fontSize: 30 }}>¿Cómo vas a usar Bidra?</h2>
             <div style={{ display: "grid", gap: 14 }}>
               {TYPE_OPTS.map(([k, title, desc]) => {
                 const on = reg.type === k;
@@ -206,8 +206,8 @@ export default function RegistroPage() {
             <h2 style={{ fontSize: 30 }}>Documentación para verificar</h2>
             <p className="muted" style={{ margin: 0, fontSize: 14 }}>
               {reg.type === "industrial"
-                ? "El equipo de BID revisa cada empresa antes de que pueda pujar. Los certificados ISO y de instalador los añadirás después desde tu perfil."
-                : "El equipo de BID revisa cada empresa antes de que pueda publicar."}
+                ? "El equipo de Bidra revisa cada empresa antes de que pueda pujar. Los certificados ISO y de instalador los añadirás después desde tu perfil."
+                : "El equipo de Bidra revisa cada empresa antes de que pueda publicar."}
             </p>
             <div className="stack" style={{ gap: 10 }}>
               {docList.map(([k, hint]) => {
@@ -276,7 +276,7 @@ export default function RegistroPage() {
 
         {err && <div className="err" role="alert">{err}</div>}
         <PrimaryButton type="submit" className="btn-lg" disabled={pending}>
-          {step === "docs" ? (pending ? "Enviando…" : "Enviar a verificación") : step === "done" ? "Entrar en BID" : "Continuar"}
+          {step === "docs" ? (pending ? "Enviando…" : "Enviar a verificación") : step === "done" ? "Entrar en Bidra" : "Continuar"}
         </PrimaryButton>
       </form>
     </AuthFrame>

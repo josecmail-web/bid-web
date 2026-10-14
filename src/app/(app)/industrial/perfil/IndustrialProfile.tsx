@@ -54,7 +54,7 @@ export function IndustrialProfile({ me, mine }: { me: IndustrialProfileDTO; mine
       if (!r.ok) return setNcErr(r.error);
       setNc(emptyNc);
       setNcErr("");
-      flash(CERTS[id].code + " enviado. BID lo validará en 24–48 h.");
+      flash(CERTS[id].code + " enviado. Bidra lo validará en 24–48 h.");
     });
   };
 
