@@ -136,6 +136,8 @@ export interface SeedTender {
   bids?: { ind: string; p: number[] }[];
   /** o pujas generadas a partir de un oficio de GENERATED */
   generatedBids?: { trade: string; count: number };
+  /** industriales (claves) con derecho de tanteo */
+  tanteo?: string[];
   /** clave del industrial adjudicatario, o "lowest" */
   awarded?: string;
   minRating?: number;
@@ -195,7 +197,7 @@ export const TENDERS: SeedTender[] = [
   },
   {
     number: 239, owner: "via", title: "Fontanería y saneamiento", obra: "Residencial Altea Hills · 32 viviendas", loc: "Altea, Alicante", sector: "Fontanería",
-    status: "abierta", closes: { inDays: 5 }, ref: null, req: ["rea", "fon"], minRating: 4,
+    status: "abierta", closes: { inDays: 5 }, ref: null, req: ["rea", "fon"], minRating: 4, tanteo: ["h"],
     items: [
       ["01", "Red de abastecimiento multicapa por vivienda", "ud", 32, 1850],
       ["02", "Red de saneamiento colgada de PVC", "ml", 860, 36],

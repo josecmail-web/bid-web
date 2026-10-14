@@ -183,6 +183,8 @@ export const tenders = pgTable("tenders", {
   minRating: real("min_rating"),
   requiredCerts: jsonb("required_certs").$type<string[]>().notNull().default([]),
   awardedBidId: uuid("awarded_bid_id"),
+  /** fin del plazo de tanteo (cierre + 72 h) si algún titular puede igualar la mejor oferta */
+  tanteoUntil: timestamp("tanteo_until", { withTimezone: true }),
   /** Estado completo del asistente (solo borradores) */
   draft: jsonb("draft"),
   createdAt: createdAt(),
@@ -204,6 +206,29 @@ export const tenderItems = pgTable("tender_items", {
   quantity: doublePrecision("quantity").notNull(),
   chapter: text("chapter"),
 });
+
+/* — derecho de tanteo (ver src/server/tanteo.ts) — */
+
+export const tanteoStatus = pgEnum("tanteo_status", ["holder", "best", "pending", "matched", "declined", "expired", "nobid"]);
+
+/** Industriales a los que la promotora reserva igualar la mejor oferta tras el cierre. */
+export const tenderTanteo = pgTable(
+  "tender_tanteo",
+  {
+    tenderId: text("tender_id")
+      .notNull()
+      .references(() => tenders.id, { onDelete: "cascade" }),
+    companyId: uuid("company_id")
+      .notNull()
+      .references(() => companies.id, { onDelete: "cascade" }),
+    status: tanteoStatus("status").notNull().default("holder"),
+    /** al cierre: mejor total de otro industrial y total del titular */
+    bestTotal: money("best_total"),
+    originalTotal: money("original_total"),
+    decidedAt: timestamp("decided_at", { withTimezone: true }),
+  },
+  (t) => [primaryKey({ columns: [t.tenderId, t.companyId] })],
+);
 
 /* — pujas — */
 

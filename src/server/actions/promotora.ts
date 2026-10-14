@@ -1,6 +1,6 @@
 "use server";
 
-import { and, eq, ne, sql } from "drizzle-orm";
+import { and, eq, ilike, inArray, ne, or, sql } from "drizzle-orm";
 import { refresh } from "next/cache";
 import { getSession, requireAction } from "../auth";
 import { getDb, schema as s, type DB } from "../db";
@@ -11,12 +11,13 @@ import { eligibleIndustrials } from "../eligibility";
 import { closeExpired, getIndustrialProfile } from "../queries";
 import { safe, UserError } from "../action-utils";
 import { bidTotal, recordAwardFee } from "../fees";
+import { tanteoActive } from "../tanteo";
 import { PILOT, TARIFF_TEXT } from "@/lib/pricing";
-import { eur, eur2 } from "@/lib/format";
+import { closeLabel, eur, eur2 } from "@/lib/format";
 import { EXTRA_CERTS, SECTOR_NAMES, TITLE, reqFor } from "@/lib/catalog";
-import { MIN_RATING, validateWizardStep } from "@/lib/rules";
+import { MIN_RATING, TANTEO_HOURS, TANTEO_MAX, validateWizardStep } from "@/lib/rules";
 import type { ImportResult } from "@/lib/import";
-import type { ActionResult, IndustrialProfileDTO, ReviewInput, Sector, WizardFile, WizardState } from "@/lib/types";
+import type { ActionResult, IndustrialProfileDTO, ReviewInput, Sector, TanteoPick, WizardFile, WizardState } from "@/lib/types";
 
 const tenderId = (n: number) => "LIC-" + String(n).padStart(4, "0");
 
@@ -84,7 +85,30 @@ function sanitize(w: WizardState, companyId: string): WizardState {
     min: (["Cualquiera", "3+", "4+", "4,5+"] as const).includes(w.min) ? w.min : "Cualquiera",
     refs: Object.fromEntries(Object.entries(w.refs ?? {}).filter(([k]) => (SECTOR_NAMES as string[]).includes(k)).map(([k, v]) => [k, cut(v, 20)])),
     extra: (Array.isArray(w.extra) ? w.extra : []).filter((x) => EXTRA_CERTS.includes(x)),
+    // Solo id + datos de pantalla; al publicar se comprueba contra la base de datos
+    tanteo: (Array.isArray(w.tanteo) ? w.tanteo : [])
+      .filter((p) => typeof p?.id === "string" && /^[0-9a-f-]{36}$/.test(p.id))
+      .slice(0, TANTEO_MAX)
+      .map((p) => ({ id: p.id, name: cut(p.name, 200), city: cut(p.city, 100), trades: (Array.isArray(p.trades) ? p.trades : []).map((x) => cut(x, 60)).slice(0, 20) })),
   };
+}
+
+/** Industriales verificados para darles derecho de tanteo (búsqueda por nombre o CIF). */
+export async function searchIndustriales(q: string): Promise<ActionResult<{ results: TanteoPick[] }>> {
+  return safe(async () => {
+    await requireAction("promotora");
+    const term = String(q ?? "").trim().slice(0, 80);
+    if (term.length < 2) return { ok: true, results: [] };
+    const like = "%" + term.replace(/[\\%_]/g, (c) => "\\" + c) + "%";
+    const db = await getDb();
+    const rows = await db
+      .select({ id: s.companies.id, name: s.companies.name, city: s.companies.city, province: s.companies.province, trades: s.companies.trades })
+      .from(s.companies)
+      .where(and(eq(s.companies.type, "industrial"), eq(s.companies.verification, "approved"), or(ilike(s.companies.name, like), ilike(s.companies.cif, like))))
+      .orderBy(s.companies.name)
+      .limit(10);
+    return { ok: true, results: rows.map((r) => ({ id: r.id, name: r.name, city: r.city && r.city !== r.province ? `${r.city}, ${r.province}` : (r.city ?? r.province), trades: r.trades })) };
+  });
 }
 
 const usedSectors = (w: WizardState) => SECTOR_NAMES.filter((n) => w.partidas.some((p) => p.on && p.sector === n));
@@ -132,6 +156,12 @@ export async function publishTenders(input: WizardState, closeIso: string): Prom
     const secs = usedSectors(w) as Sector[];
     const inc = w.partidas.filter((p) => p.on);
     const minRating = MIN_RATING[w.min];
+    const holders = w.tanteo.length
+      ? await db
+          .select({ id: s.companies.id, trades: s.companies.trades })
+          .from(s.companies)
+          .where(and(inArray(s.companies.id, w.tanteo.map((p) => p.id)), eq(s.companies.type, "industrial"), eq(s.companies.verification, "approved")))
+      : [];
 
     const created = await db.transaction(async (tx) => {
       const [existing] = await tx.select().from(s.projects).where(and(eq(s.projects.ownerId, user.companyId), eq(s.projects.name, w.obra)));
@@ -140,7 +170,7 @@ export async function publishTenders(input: WizardState, closeIso: string): Prom
         (await tx.insert(s.projects).values({ ownerId: user.companyId, name: w.obra, location: w.loc, startMonth: w.start || null, description: w.desc || null }).returning({ id: s.projects.id }))[0].id;
       if (w.files.length) await tx.insert(s.projectFiles).values(w.files.map((f) => ({ projectId, fileKey: f.key, fileName: f.name })));
 
-      const out: { id: string; sector: Sector; req: string[] }[] = [];
+      const out: { id: string; sector: Sector; req: string[]; tanteoIds: string[] }[] = [];
       for (const sec of secs) {
         const n = await nextNumber(tx as unknown as DB);
         const id = tenderId(n);
@@ -153,7 +183,9 @@ export async function publishTenders(input: WizardState, closeIso: string): Prom
         await tx.insert(s.tenderItems).values(
           inc.filter((p) => p.sector === sec).map((p, position) => ({ tenderId: id, position, code: p.code, description: p.d, longDescription: p.long ?? null, unit: p.u, quantity: p.q, chapter: p.chapter ?? null })),
         );
-        out.push({ id, sector: sec, req });
+        const tanteoIds = holders.filter((h) => h.trades.includes(sec)).map((h) => h.id);
+        if (tanteoIds.length) await tx.insert(s.tenderTanteo).values(tanteoIds.map((companyId) => ({ tenderId: id, companyId })));
+        out.push({ id, sector: sec, req, tanteoIds });
       }
       if (w.draftId) await tx.delete(s.tenders).where(and(eq(s.tenders.id, w.draftId), eq(s.tenders.ownerId, user.companyId), eq(s.tenders.status, "borrador")));
       return out;
@@ -163,7 +195,14 @@ export async function publishTenders(input: WizardState, closeIso: string): Prom
     for (const t of created) {
       if (w.scope === "invitacion") continue; // TODO: invitaciones a industriales concretos
       const ids = await eligibleIndustrials(db, t.sector, t.req, minRating);
-      await notify(db, ids, "tender_published", `Nuevo paquete de ${t.sector}: ${TITLE[t.sector]} · ${w.obra} (${t.id}).`, `/industrial/paquetes/${t.id}`);
+      const tanteoNote = t.tanteoIds.length ? ` Tiene derecho de tanteo: uno o varios industriales podrán igualar la mejor oferta en las ${TANTEO_HOURS} h siguientes al cierre.` : "";
+      await notify(db, ids.filter((x) => !t.tanteoIds.includes(x)), "tender_published", `Nuevo paquete de ${t.sector}: ${TITLE[t.sector]} · ${w.obra} (${t.id}).${tanteoNote}`, `/industrial/paquetes/${t.id}`);
+      // Titulares: aviso propio (aunque aún les falte algún requisito, para que lo resuelvan antes del cierre)
+      await notify(
+        db, t.tanteoIds, "tanteo_granted",
+        `${user.companyName} te da derecho de tanteo en ${t.id} · ${TITLE[t.sector]} (${w.obra}). Para ejercerlo, presenta tu oferta antes del cierre, ${closeLabel(closesAt.toISOString())}: si no es la más baja, tendrás ${TANTEO_HOURS} h para igualar la mejor.`,
+        `/industrial/paquetes/${t.id}`,
+      );
     }
     refresh();
     return { ok: true, ids: created.map((t) => t.id), sectors: created.map((t) => t.sector) };
@@ -178,6 +217,8 @@ export async function awardTender(tenderIdArg: string, companyId: string): Promi
     const [t] = await db.select().from(s.tenders).where(and(eq(s.tenders.id, tenderIdArg), eq(s.tenders.ownerId, user.companyId)));
     if (!t) throw new UserError("Partida no encontrada.");
     if (t.status !== "evaluacion") throw new UserError(t.status === "adjudicada" ? "Esta partida ya está adjudicada." : "La puja aún no ha cerrado.");
+    if (await tanteoActive(db, t.id, t.tanteoUntil))
+      throw new UserError(`Hay un derecho de tanteo en curso hasta el ${closeLabel(t.tanteoUntil!.toISOString())}. Podrás adjudicar cuando respondan los titulares o termine el plazo.`);
     const [bid] = await db
       .select({ id: s.bids.id, name: s.companies.name })
       .from(s.bids)

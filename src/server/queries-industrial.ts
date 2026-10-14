@@ -2,6 +2,7 @@ import { and, asc, count, desc, eq, inArray, or, sql } from "drizzle-orm";
 import { getDb, schema as s, type DB } from "./db";
 import { closeExpired, currentYM, ratingsFor, reviewForTender } from "./queries";
 import { fileUrl } from "./storage";
+import { tanteoForIndustrial } from "./tanteo";
 import type { BidResult, CertId, IndustrialTenderCardDTO, IndustrialTenderDTO } from "@/lib/types";
 
 /**
@@ -49,8 +50,10 @@ async function toCards(db: DB, companyId: string, rows: Row[]): Promise<Industri
     .innerJoin(s.tenderItems, eq(s.tenderItems.id, s.bidItems.tenderItemId))
     .where(and(eq(s.bids.companyId, companyId), inArray(s.bids.tenderId, ids)))
     .groupBy(s.bids.id);
+  const tanteo = await tanteoForIndustrial(db, companyId, ids);
 
   return rows.map(({ t, owner, obra, loc }) => {
+    const myT = tanteo.mine.get(t.id);
     const e = ctx.check(t.sector, t.requiredCerts, t.minRating);
     const b = mine.find((m) => m.tenderId === t.id);
     const result: BidResult = t.status === "adjudicada" && b ? (t.awardedBidId === b.bidId ? "won" : "lost") : null;
@@ -61,6 +64,8 @@ async function toCards(db: DB, companyId: string, rows: Row[]): Promise<Industri
       eligible: e.ok, missing: e.missing, missingPending: e.missingPending, ratingTooLow: e.ratingTooLow,
       myBid: b ? { total: b.total, updatedAt: b.updatedAt.toISOString() } : null,
       result,
+      tanteo: tanteo.has.has(t.id),
+      myTanteo: myT ? { ...myT, until: myT.status === "pending" ? iso(t.tanteoUntil) : null } : null,
     };
   });
 }

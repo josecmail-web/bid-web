@@ -1,6 +1,17 @@
 import { STATUS } from "./catalog";
 import { closeLabel, dateLabel, daysTo, eur } from "./format";
-import type { TenderCardDTO, TenderStatus } from "./types";
+import type { TanteoStatus, TenderCardDTO, TenderStatus } from "./types";
+
+/** Situación de un titular del derecho de tanteo, para la promotora. */
+export const TANTEO_LABEL: Record<TanteoStatus, string> = {
+  holder: "Titular del tanteo",
+  best: "Tanteo: ya era la mejor oferta",
+  pending: "Tanteo: puede igualar",
+  matched: "Tanteo: ha igualado la mejor oferta",
+  declined: "Tanteo: ha renunciado",
+  expired: "Tanteo: no respondió a tiempo",
+  nobid: "Tanteo: no pujó",
+};
 
 /** Métricas de la tarjeta del listado según estado. */
 export function tenderSummary(t: TenderCardDTO) {
@@ -11,6 +22,7 @@ export function tenderSummary(t: TenderCardDTO) {
   }
   if (t.status === "evaluacion") {
     k1 = "Pujas"; v1 = String(t.sealed); k2 = "Oferta más baja"; v2 = t.minTotal !== null ? eur(t.minTotal) : "—";
+    if (t.tanteoUntil) { k2 = "Tanteo hasta"; v2 = closeLabel(t.tanteoUntil); }
   }
   if (t.status === "adjudicada") {
     k1 = "Adjudicada a"; v1 = t.awardedName ? t.awardedName.split(" ").slice(0, 2).join(" ") : "—";

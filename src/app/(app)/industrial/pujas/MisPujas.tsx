@@ -12,6 +12,8 @@ type Filter = "todas" | "abiertas" | "evaluacion" | "ganadas" | "perdidas";
 function state(t: IndustrialTenderCardDTO): [string, string] {
   if (t.result === "won") return ["Adjudicada", "tag tag-accent"];
   if (t.result === "lost") return ["No adjudicada", "tag tag-neutral"];
+  if (t.status === "evaluacion" && t.myTanteo?.status === "pending" && t.myTanteo.until && new Date(t.myTanteo.until) > new Date())
+    return ["Tanteo: puedes igualar", "tag tag-accent"];
   if (t.status === "evaluacion") return ["En evaluación", "tag tag-outline"];
   return ["Abierta · editable", "tag tag-outline"];
 }

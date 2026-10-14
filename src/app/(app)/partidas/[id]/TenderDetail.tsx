@@ -7,8 +7,9 @@ import { useUI } from "@/lib/store";
 import { CERTS } from "@/lib/catalog";
 import { awardTender } from "@/server/actions/promotora";
 import type { TenderDetailDTO } from "@/lib/types";
-import { avg, dot, eur, eur2, num, pct, stars } from "@/lib/format";
-import { tenderCloseText } from "@/lib/tender";
+import { avg, closeLabel, dot, eur, eur2, num, pct, stars } from "@/lib/format";
+import { TANTEO_LABEL, tenderCloseText } from "@/lib/tender";
+import { TANTEO_HOURS } from "@/lib/rules";
 import { STATUS } from "@/lib/catalog";
 import { Blueprint, CatBars, ItemText, Seg } from "@/components/ui";
 import { ReviewBlock } from "./ReviewBlock";
@@ -26,7 +27,9 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
   const [statusLabel, tagClass] = STATUS[T.status];
   const isSealed = T.status === "abierta";
   const hasBids = T.bids.length > 0 && !isSealed;
-  const canAward = T.status === "evaluacion";
+  const tanteoOn = !!T.tanteo?.active;
+  const canAward = T.status === "evaluacion" && !tanteoOn;
+  const tanteoOf = (id: string) => T.tanteo?.holders.find((h) => h.id === id);
   const tot = T.bids.map((b) => T.items.reduce((a, p, i) => a + b.p[i] * p.q, 0));
   const minT = tot.length ? Math.min(...tot) : 0;
 
@@ -103,6 +106,33 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
         </div>
       )}
 
+      {T.tanteo && T.status !== "adjudicada" && (
+        <div className="stack small" style={{ gap: 8, padding: "14px 18px", border: "1px solid var(--color-accent-300)", background: tanteoOn ? "var(--color-accent-100)" : undefined, maxWidth: 880 }}>
+          <span className="figure" style={{ fontSize: 18 }}>
+            {isSealed ? "Paquete con derecho de tanteo" : tanteoOn ? `Derecho de tanteo en curso hasta el ${closeLabel(T.tanteo.until)}` : "Derecho de tanteo resuelto"}
+          </span>
+          <span className="muted">
+            {isSealed
+              ? `Si la oferta de un titular no es la más baja, tendrá ${TANTEO_HOURS} h tras el cierre para igualar la mejor. Para ejercerlo tiene que pujar antes del cierre. Los demás industriales saben que hay tanteo, pero no quién lo tiene.`
+              : tanteoOn
+                ? "Podrás adjudicar cuando respondan los titulares o termine el plazo. Si varios igualan la mejor oferta, eliges tú."
+                : "Ya puedes adjudicar. Si varios titulares han igualado la mejor oferta, eliges tú."}
+          </span>
+          <div className="stack" style={{ gap: 4 }}>
+            {T.tanteo.holders.map((h) => (
+              <span key={h.id} className="row" style={{ gap: 8 }}>
+                <button className="linklike" onClick={() => openProfile(h.id)} style={{ fontWeight: 500 }}>{h.name}</button>
+                <span className="muted">
+                  {isSealed ? "titular" : TANTEO_LABEL[h.status].replace("Tanteo: ", "")}
+                  {h.status === "matched" && h.original !== null ? ` (su oferta era de ${eur(h.original)})` : ""}
+                  {h.status === "pending" && h.best !== null && h.original !== null ? ` · su oferta ${eur(h.original)}, la mejor ${eur(h.best)}` : ""}
+                </span>
+              </span>
+            ))}
+          </div>
+        </div>
+      )}
+
       {isSealed && (
         <div className="stack" style={{ gap: 14 }}>
           <div className="row between" style={{ alignItems: "baseline", gap: 10 }}>
@@ -145,6 +175,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
                           <th key={c.id} style={{ verticalAlign: "bottom", padding: 12, textTransform: "none", letterSpacing: 0, minWidth: 150, textAlign: "right", background: c.awarded ? "var(--color-accent-100)" : undefined }}>
                             <div className="stack" style={{ alignItems: "flex-end", gap: 2 }}>
                               {c.awarded && <span className="tag tag-accent">Adjudicada</span>}
+                              {tanteoOf(c.id) && <span className={tanteoOf(c.id)!.status === "matched" ? "tag tag-accent" : "tag tag-outline"}>{TANTEO_LABEL[tanteoOf(c.id)!.status]}</span>}
                               <button
                                 className="linklike"
                                 onClick={() => openProfile(c.id)}
@@ -240,6 +271,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
                           {c.certCodes.map((k) => <span key={k} className="tag tag-neutral">{k}</span>)}
                         </div>
                         {c.awarded && <span className="tag tag-accent" style={{ alignSelf: "flex-start" }}>Adjudicada</span>}
+                        {tanteoOf(c.id) && <span className={tanteoOf(c.id)!.status === "matched" ? "tag tag-accent" : "tag tag-outline"} style={{ alignSelf: "flex-start" }}>{TANTEO_LABEL[tanteoOf(c.id)!.status]}</span>}
                       </div>
                     </div>
                     <div>

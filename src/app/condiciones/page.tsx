@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { PILOT, TARIFF_TEXT, TERMS_VERSION, feeFor } from "@/lib/pricing";
 import { eur } from "@/lib/format";
+import { TANTEO_HOURS } from "@/lib/rules";
 
 export const metadata: Metadata = { title: "Condiciones de uso · Bidra" };
 
@@ -35,9 +36,17 @@ export default function CondicionesPage() {
         </Section>
 
         <Section n="3" title="Puja ciega">
-          Mientras un paquete está abierto, nadie, tampoco la promotora, ve los importes ni la identidad de los pujadores; la promotora
-          solo ve el número de sobres. Cada industrial ve únicamente su propia oferta, que puede modificar hasta el cierre. Bidra no vende
-          posición, visibilidad ni información sobre las ofertas de otros.
+          <p style={{ margin: "0 0 10px" }}>
+            Mientras un paquete está abierto, nadie, tampoco la promotora, ve los importes ni la identidad de los pujadores; la promotora
+            solo ve el número de sobres. Cada industrial ve únicamente su propia oferta, que puede modificar hasta el cierre. Bidra no vende
+            posición, visibilidad ni información sobre las ofertas de otros.
+          </p>
+          <p style={{ margin: 0 }}>
+            <b style={{ fontWeight: 500 }}>Derecho de tanteo.</b> La promotora puede reservar a uno o varios industriales la opción de igualar
+            la mejor oferta durante las {TANTEO_HOURS} horas siguientes al cierre. El paquete lo indica antes de pujar, sin decir quién lo tiene.
+            Para ejercerlo, el titular debe haber pujado antes del cierre; conoce entonces el importe total de la mejor oferta, nunca quién la
+            hizo ni su desglose. Si varios titulares la igualan, la promotora elige.
+          </p>
         </Section>
 
         <Section n="4" title="Comisión por adjudicación">

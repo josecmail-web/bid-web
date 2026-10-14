@@ -11,13 +11,15 @@ import { validateWizardStep } from "@/lib/rules";
 import { parseExcel, publishTenders, saveDraft as saveDraftAction, uploadProjectFile } from "@/server/actions/promotora";
 import type { Sector, SectorOrNone, WizardRow, WizardState } from "@/lib/types";
 import { Blueprint, Chips, Field, ItemText, PrimaryButton, Seg } from "@/components/ui";
+import { TanteoPicker } from "./TanteoPicker";
 
 const LABELS = ["Obra", "Partidas", "Condiciones", "Revisar"];
 
 export function Wizard({ initial, projects }: { initial: WizardState; projects: string[] }) {
   const router = useRouter();
   const { flash } = useUI();
-  const [W, setW] = useState<WizardState>(initial);
+  // Borradores guardados antes de existir el tanteo no traen el campo
+  const [W, setW] = useState<WizardState>({ ...initial, tanteo: initial.tanteo ?? [] });
   const [err, setErr] = useState("");
   const [drag, setDrag] = useState(false);
   const [nr, setNr] = useState({ d: "", u: "ud", q: "" });
@@ -115,6 +117,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
     ["Obra", W.obra], ["Ubicación", W.loc], ["Partidas", inc.length + " en " + usedSecs.length + " sectores"],
     ["Cierre", closeLabel(W.close || null)], ["Participación", W.scope === "abierta" ? "Abierta" : "Por invitación"],
     ["Valoración mínima", W.min], ["Certificados adicionales", W.extra.length ? W.extra.map((x) => CERTS[x].code).join(", ") : "Ninguno"],
+    ["Derecho de tanteo", W.tanteo.length ? W.tanteo.map((p) => p.name).join(", ") : "No"],
   ];
 
   return (
@@ -348,6 +351,9 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
                 Cada paquete exige además REA y los certificados obligatorios de su oficio (p. ej. Electricidad → IBT, Climatización → RITE y F-GAS).
               </div>
             </Field>
+            <Field label="Derecho de tanteo (opcional)">
+              <TanteoPicker value={W.tanteo} onChange={(v) => setWz("tanteo", v)} sectors={usedSecs} />
+            </Field>
             <div className="small muted" style={{ paddingTop: 4, borderTop: "1px solid var(--color-divider)" }}>
               Puja ciega: cada industrial solo ve su propia oferta. Las ofertas se abren al cierre y el desglose por partidas es obligatorio.
             </div>
@@ -383,6 +389,11 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
                       <span className="xs muted">Exige</span>
                       {reqFor(sec, W.extra).map((r) => <span key={r} className="tag tag-outline">{CERTS[r].code}</span>)}
                     </div>
+                    {W.tanteo.some((p) => p.trades.includes(sec)) && (
+                      <span className="xs muted">
+                        Derecho de tanteo: {W.tanteo.filter((p) => p.trades.includes(sec)).map((p) => p.name).join(", ")}
+                      </span>
+                    )}
                     <Field label="Presupuesto de referencia (opcional, solo lo ves tú)" style={{ marginTop: "auto" }}>
                       <input className="input" type="number" min={0} value={W.refs[sec] ?? ""} onChange={(e) => setWz("refs", { ...W.refs, [sec]: e.target.value })} placeholder="€ sin IVA" />
                     </Field>

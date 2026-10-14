@@ -15,6 +15,10 @@ const EMAIL: Record<string, { subject: string; action: string }> = {
   cert_rejected: { subject: "Certificado rechazado en Bidra", action: "Ver mis certificados" },
   company_approved: { subject: "Tu empresa está verificada en Bidra", action: "Entrar en Bidra" },
   company_rejected: { subject: "No hemos podido verificar tu empresa", action: "Entrar en Bidra" },
+  tanteo_granted: { subject: "Tienes derecho de tanteo en un paquete de Bidra", action: "Ver el paquete" },
+  tanteo_open: { subject: "Puedes igualar la mejor oferta (derecho de tanteo)", action: "Ejercer el tanteo" },
+  tanteo_answer: { subject: "Respuesta a tu derecho de tanteo", action: "Ver las ofertas" },
+  tanteo_ended: { subject: "Ya puedes adjudicar tu paquete", action: "Ver las ofertas" },
   docs_requested: { subject: "Necesitamos documentación para verificar tu empresa", action: "Entrar en Bidra" },
 };
 

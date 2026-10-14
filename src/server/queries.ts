@@ -3,8 +3,10 @@ import { alias } from "drizzle-orm/pg-core";
 import { getDb, schema as s, type DB } from "./db";
 import { fileUrl } from "./storage";
 import { notify } from "./notify";
+import { activeTanteoIds, expireTanteo, ownerTanteo, startTanteo } from "./tanteo";
 import { CERTS } from "@/lib/catalog";
 import { requiredDocs } from "@/lib/rules";
+import { closeLabel } from "@/lib/format";
 import type {
   AdminDataDTO,
   BidderDTO,
@@ -38,8 +40,18 @@ export async function closeExpired(db: DB) {
     .update(s.tenders)
     .set({ status: "evaluacion" })
     .where(and(eq(s.tenders.status, "abierta"), lte(s.tenders.closesAt, new Date())))
-    .returning({ id: s.tenders.id, ownerId: s.tenders.ownerId });
-  for (const t of closed) await notify(db, [t.ownerId], "tender_closed", `${t.id} ha cerrado. Ya puedes comparar las ofertas.`, `/partidas/${t.id}`);
+    .returning({ id: s.tenders.id, ownerId: s.tenders.ownerId, title: s.tenders.title });
+  for (const t of closed) {
+    const until = await startTanteo(db, t);
+    await notify(
+      db, [t.ownerId], "tender_closed",
+      until
+        ? `${t.id} ha cerrado. Ya puedes comparar las ofertas. Hay titulares del derecho de tanteo que pueden igualar la mejor oferta hasta el ${closeLabel(until.toISOString())}; podrás adjudicar después.`
+        : `${t.id} ha cerrado. Ya puedes comparar las ofertas.`,
+      `/partidas/${t.id}`,
+    );
+  }
+  await expireTanteo(db);
 }
 
 /** Media por categoría y nº de obras valoradas (valoraciones no ocultas). */
@@ -124,6 +136,7 @@ export async function listOwnerTenders(ownerId: string): Promise<TenderCardDTO[]
   if (!ids.length) return [];
   const itemCounts = await db.select({ id: s.tenderItems.tenderId, n: count() }).from(s.tenderItems).where(inArray(s.tenderItems.tenderId, ids)).groupBy(s.tenderItems.tenderId);
   const totals = await bidTotals(db, ids);
+  const tanteoNow = await activeTanteoIds(db, ids);
   const reviewed = await db
     .select({ tenderId: s.reviews.tenderId })
     .from(s.reviews)
@@ -147,6 +160,7 @@ export async function listOwnerTenders(ownerId: string): Promise<TenderCardDTO[]
       awardedName: names.find((n) => n.bidId === t.awardedBidId)?.name ?? null,
       awardedTotal: awarded?.total ?? null,
       needsReview: t.status === "adjudicada" && !!t.awardedBidId && !reviewed.some((r) => r.tenderId === t.id),
+      tanteoUntil: tanteoNow.has(t.id) ? iso(t.tanteoUntil) : null,
     };
   });
 }
@@ -169,6 +183,7 @@ export async function getOwnerTender(ownerId: string, id: string): Promise<Tende
     closesAt: iso(t.closesAt), ref: t.referenceBudget, req: t.requiredCerts as CertId[],
     items: items.map((i) => ({ code: i.code, d: i.description, ...(i.longDescription ? { long: i.longDescription } : {}), u: i.unit, q: i.quantity })),
     sealed: bidRows.length, bids: [], awardedCompanyId: null, review: null,
+    tanteo: await ownerTanteo(db, t.id, t.tanteoUntil),
   };
   // Puja ciega: con la puja abierta no salen de aquí ni importes ni identidades.
   if (t.status === "abierta" || !bidRows.length) return base;

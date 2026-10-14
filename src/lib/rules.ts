@@ -57,9 +57,14 @@ export function validateWizardStep(w: WizardState, step: number): string {
   return "";
 }
 
+/** Horas que tienen los titulares del tanteo para igualar la mejor oferta tras el cierre. */
+export const TANTEO_HOURS = 72;
+/** Máximo de titulares por publicación. */
+export const TANTEO_MAX = 5;
+
 export const MIN_RATING: Record<WizardState["min"], number | null> = { Cualquiera: null, "3+": 3, "4+": 4, "4,5+": 4.5 };
 
 export const emptyWizard = (): WizardState => ({
   step: 0, draftId: null, obra: "", loc: "", start: "", desc: "", files: [], partidas: [], fileName: "", importNote: "",
-  close: "", scope: "abierta", min: "Cualquiera", refs: {}, extra: [],
+  close: "", scope: "abierta", min: "Cualquiera", refs: {}, extra: [], tanteo: [],
 });

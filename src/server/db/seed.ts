@@ -136,7 +136,7 @@ export async function seed(db: DB) {
           ? {
               step: 0, draftId: id, obra: t.obra, loc: t.loc, start: "", desc: "", files: [], fileName: "", importNote: "",
               partidas: t.items.map(([code, d, u, q], i) => ({ id: i + 1, code, d, u, q, sector: t.sector, on: true })),
-              close: "", scope: "abierta", min: "Cualquiera", refs: {}, extra: [],
+              close: "", scope: "abierta", min: "Cualquiera", refs: {}, extra: [], tanteo: [],
             }
           : null;
 
@@ -150,6 +150,7 @@ export async function seed(db: DB) {
         .values(t.items.map(([code, description, unit, quantity], position) => ({ tenderId: id, position, code, description, unit, quantity })))
         .returning({ id: s.tenderItems.id, position: s.tenderItems.position });
       items.sort((a, b) => a.position - b.position);
+      if (t.tanteo?.length) await tx.insert(s.tenderTanteo).values(t.tanteo.map((k) => ({ tenderId: id, companyId: ind[k] })));
 
       const bidSpecs: { company: string; p: number[] }[] = (t.bids ?? []).map((b) => ({ company: ind[b.ind], p: b.p }));
       if (t.generatedBids) {
@@ -215,7 +216,7 @@ export async function seed(db: DB) {
 /** Vacía todas las tablas y vuelve a sembrar (solo modo demo). */
 export async function resetAndSeed(db: DB) {
   await db.execute(
-    sql`truncate table award_fees, auth_attempts, auth_tokens, notifications, review_reports, reviews, bid_items, bids, tender_items, tenders, project_files, projects, certificates, company_docs, sessions, users, companies restart identity cascade`,
+    sql`truncate table tender_tanteo, award_fees, auth_attempts, auth_tokens, notifications, review_reports, reviews, bid_items, bids, tender_items, tenders, project_files, projects, certificates, company_docs, sessions, users, companies restart identity cascade`,
   );
   cifN = 0;
   await seed(db);

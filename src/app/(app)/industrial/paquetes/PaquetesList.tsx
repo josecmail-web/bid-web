@@ -70,6 +70,7 @@ export function PaquetesList({ tenders, companyName }: { tenders: IndustrialTend
               <div className="figure" style={{ fontSize: 24, lineHeight: 1.1 }}>{t.title}</div>
               <div className="muted" style={{ fontSize: 14 }}>{t.obra} · {t.loc}</div>
               <div className="xs muted">{t.owner}</div>
+              {t.tanteo && <div className="xs" style={{ color: "var(--color-accent-800)" }}>{t.myTanteo ? "Tienes derecho de tanteo" : "Con derecho de tanteo"}</div>}
               {!open && <div className="xs" style={{ color: "var(--color-accent-800)" }}>{accessNote(t)}</div>}
               <div style={{ marginTop: "auto", display: "grid", gridTemplateColumns: "1fr 1fr", borderTop: "1px solid var(--color-divider)", paddingTop: 12, gap: 10, width: "100%" }}>
                 <div>

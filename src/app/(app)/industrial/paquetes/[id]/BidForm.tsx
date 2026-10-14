@@ -6,7 +6,8 @@ import { ArrowLeft } from "lucide-react";
 import { useUI } from "@/lib/store";
 import { CATS, CERTS } from "@/lib/catalog";
 import { avg, closeLabel, dateLabel, dec1, eur, ratingMin, eur2, num, parsePrice, priceInput, stars } from "@/lib/format";
-import { importBidPrices, submitBid } from "@/server/actions/industrial";
+import { declineTanteo, exerciseTanteo, importBidPrices, submitBid } from "@/server/actions/industrial";
+import { TANTEO_HOURS } from "@/lib/rules";
 import type { IndustrialTenderDTO } from "@/lib/types";
 import { PILOT, TARIFF_TEXT, feeFor } from "@/lib/pricing";
 import { Blueprint, ItemText, PrimaryButton } from "@/components/ui";
@@ -36,33 +37,38 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
   const [err, setErr] = useState("");
   const [showMissing, setShowMissing] = useState(false);
   const [confirm, setConfirm] = useState(false);
+  const [confirmDecline, setConfirmDecline] = useState(false);
   const [imported, setImported] = useState<{ msg: string; warnings: string[] } | null>(null);
   const [importing, startImport] = useTransition();
   const xlsRef = useRef<HTMLInputElement>(null);
 
-  const editable = T.status === "abierta" && T.eligible && T.verified;
+  const bidOpen = T.status === "abierta" && T.eligible && T.verified;
+  // Derecho de tanteo con plazo abierto: puede rehacer sus precios para igualar la mejor oferta
+  const best = T.myTanteo?.best ?? null;
+  const tanteoMode = T.status === "evaluacion" && T.myTanteo?.status === "pending" && best !== null && !!T.myTanteo.until && new Date(T.myTanteo.until) > new Date();
+  const editable = bidOpen || tanteoMode;
   /** ¿Difieren estos precios de lo enviado? (numérico: "1.850,50" = 1850,5) */
   const differs = (ps: string[]) =>
     T.myPrices ? ps.some((p, i) => parsePrice(p) !== T.myPrices![i]) : ps.some((p) => p.trim() !== "");
   const dirty = differs(prices);
 
-  // Borrador local de precios sin enviar (solo en este navegador)
+  // Borrador local de precios sin enviar (solo en este navegador, mientras la puja está abierta)
   useEffect(() => {
-    if (!editable) return;
+    if (!bidOpen) return;
     const d = readDraft(T.id);
     if (d && d.length === saved.length && differs(d)) {
       setPrices(d);
       setRestored(true);
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [T.id, editable, saved]);
+  }, [T.id, bidOpen, saved]);
   useEffect(() => {
-    if (!editable) return;
+    if (!bidOpen) return;
     try {
       if (dirty) localStorage.setItem(draftKey(T.id), JSON.stringify(prices));
       else localStorage.removeItem(draftKey(T.id));
     } catch {}
-  }, [prices, dirty, editable, T.id]);
+  }, [prices, dirty, bidOpen, T.id]);
 
   const unit = prices.map(parsePrice);
   const valid = unit.map((v) => Number.isFinite(v) && v > 0);
@@ -81,8 +87,35 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
       const n = T.items.length - filled;
       return setErr(n === 1 ? "Falta el precio unitario de 1 partida." : `Falta el precio unitario de ${n} partidas.`);
     }
+    if (tanteoMode && total > best! + 0.01) return setErr(`Para igualar la mejor oferta tu total debe ser como máximo ${eur2(best!)}. Ahora es ${eur2(total)}.`);
     setConfirm(true);
   };
+
+  /** Baja todos los precios en la misma proporción para que el total no supere la mejor oferta. */
+  const matchBest = () => {
+    if (!best || !(total > 0)) return;
+    const f = best / total;
+    setPrices(unit.map((v) => priceInput(Math.max(0.01, Math.floor(v * f * 100) / 100))));
+    setErr("");
+  };
+
+  const exercise = () =>
+    start(async () => {
+      const r = await exerciseTanteo(T.id, unit);
+      setConfirm(false);
+      if (!r.ok) return setErr(r.error);
+      setPrices(unit.map(priceInput));
+      flash(`Has ejercido el derecho de tanteo: tu oferta queda en ${eur(r.total)}. ${T.owner} decidirá la adjudicación.`);
+    });
+
+  const decline = () =>
+    start(async () => {
+      const r = await declineTanteo(T.id);
+      setConfirmDecline(false);
+      if (!r.ok) return setErr(r.error);
+      setPrices(saved);
+      flash("Has renunciado al derecho de tanteo. Se mantiene tu oferta original.");
+    });
 
   /** Rellena el formulario con los precios de un Excel (no envía la puja). */
   const importExcel = (file: File) => {
@@ -203,7 +236,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
           <span className="small muted">La promotora ha elegido otra oferta. Como en toda puja ciega, no se comparten importes ni el nombre del adjudicatario.</span>
         </div>
       )}
-      {T.status === "evaluacion" && (
+      {T.status === "evaluacion" && !tanteoMode && (
         <div className="stack" style={{ gap: 2, padding: "14px 18px", background: "var(--color-accent-100)", color: "var(--color-accent-800)" }}>
           <span className="figure" style={{ fontSize: 20 }}>En evaluación</span>
           <span className="small">La puja cerró el {dateLabel(T.closesAt)}. La promotora está comparando las ofertas; te avisaremos del resultado.</span>
@@ -213,6 +246,41 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
         <div className="row between" style={{ gap: 8, padding: "12px 16px", background: "var(--color-accent-100)", color: "var(--color-accent-800)", fontSize: 14 }}>
           <span><b style={{ fontWeight: 500 }}>Puja enviada</b> · última modificación {closeLabel(T.myBid.updatedAt)}</span>
           <span>Puedes modificarla hasta el cierre, {closeLabel(T.closesAt)}.</span>
+        </div>
+      )}
+      {T.tanteo && T.status === "abierta" && (
+        <div className="small" style={{ padding: "12px 16px", border: "1px solid var(--color-accent-300)" }}>
+          {T.myTanteo ? (
+            <><b style={{ fontWeight: 500 }}>Tienes derecho de tanteo en este paquete.</b> Presenta tu oferta antes del cierre: si no es la más baja, tendrás {TANTEO_HOURS} h para igualar la mejor.</>
+          ) : (
+            <><b style={{ fontWeight: 500 }}>Paquete con derecho de tanteo.</b> {T.owner} ha reservado a uno o varios industriales la opción de igualar la mejor oferta durante las {TANTEO_HOURS} h siguientes al cierre.</>
+          )}
+        </div>
+      )}
+      {tanteoMode && (
+        <div className="stack" style={{ gap: 8, padding: "16px 18px", background: "var(--color-accent-900)", color: "#f2f2f3" }}>
+          <div style={{ fontSize: 11, letterSpacing: ".1em", textTransform: "uppercase", color: "var(--color-accent-300)" }}>Derecho de tanteo · hasta el {closeLabel(T.myTanteo!.until)}</div>
+          <div className="figure" style={{ fontSize: 24 }}>La mejor oferta es de {eur(best!)}{T.myBid ? ` · la tuya, ${eur(T.myBid.total)}` : ""}</div>
+          <span style={{ fontSize: 14, color: "var(--color-accent-200)" }}>
+            Para quedarte el paquete, ajusta tus precios por partida hasta que el total sea igual o menor y ejerce el tanteo. No sabrás quién hizo la mejor oferta ni su desglose. Si renuncias o dejas pasar el plazo, se mantiene tu oferta original.
+          </span>
+          <div className="row" style={{ gap: 8, marginTop: 4 }}>
+            <button className="btn btn-secondary" style={{ background: "var(--color-bg)", color: "var(--color-text)" }} onClick={matchBest} disabled={pending}>Ajustar mis precios a {eur(best!)}</button>
+            <button className="btn btn-ghost" style={{ color: "#f2f2f3" }} onClick={() => setConfirmDecline(true)} disabled={pending}>Renunciar</button>
+          </div>
+        </div>
+      )}
+      {T.status !== "abierta" && T.myTanteo && !tanteoMode && T.myTanteo.status !== "holder" && T.result === null && (
+        <div className="small" style={{ padding: "12px 16px", border: "1px solid var(--color-divider)" }}>
+          {{
+            best: "Tu oferta ya era la mejor: no ha hecho falta ejercer el derecho de tanteo.",
+            matched: `Has igualado la mejor oferta${T.myBid ? ` con ${eur(T.myBid.total)}` : ""}. ${T.owner} decidirá la adjudicación.`,
+            declined: "Renunciaste al derecho de tanteo. Se mantiene tu oferta original.",
+            expired: "El plazo para ejercer el derecho de tanteo terminó sin respuesta. Se mantiene tu oferta original.",
+            nobid: "No presentaste oferta antes del cierre, así que no tienes derecho de tanteo en este paquete.",
+            pending: "El plazo para ejercer el derecho de tanteo ha terminado.",
+            holder: "",
+          }[T.myTanteo.status]}
         </div>
       )}
       {T.status === "abierta" && !T.verified && (
@@ -244,15 +312,15 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
         </div>
         <div className="row between stripes" style={{ gap: 10, padding: "10px 14px", border: "1px dashed var(--color-divider)" }}>
           <span className="small muted">
-            {editable ? "¿Presupuestas en Excel? Descarga las partidas, rellena la columna de precios y súbela." : "Descarga tu oferta en Excel."}
+            {bidOpen ? "¿Presupuestas en Excel? Descarga las partidas, rellena la columna de precios y súbela." : "Descarga tu oferta en Excel."}
           </span>
           <div className="row" style={{ gap: 8 }}>
             {(editable || T.myBid) && (
               <a className="btn btn-secondary" href={`/api/paquetes/${T.id}/excel`} download>
-                {editable ? "Descargar Excel" : "Descargar mi oferta (.xlsx)"}
+                {bidOpen ? "Descargar Excel" : "Descargar mi oferta (.xlsx)"}
               </a>
             )}
-            {editable && (
+            {bidOpen && (
               <>
                 <button type="button" className="btn btn-secondary" disabled={importing} onClick={() => xlsRef.current?.click()}>
                   {importing ? "Leyendo…" : "Subir Excel con precios"}
@@ -348,7 +416,14 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
             {err && <div className="err" role="alert">{err}</div>}
             <div className="row between" style={{ gap: 10 }}>
               <span className="stack small muted" style={{ maxWidth: 520, gap: 4 }}>
-                <span>Puja ciega: nadie más ve tu oferta, ni sabes cuántas pujas hay. Las ofertas se abren al cierre.</span>
+                {tanteoMode ? (
+                  <span>
+                    Total máximo para igualar: <b style={{ fontWeight: 500, color: "var(--color-text)" }}>{eur2(best!)}</b>
+                    {total > 0 && (total <= best! + 0.01 ? " · tu total ya la iguala" : ` · te sobran ${eur2(total - best!)}`)}
+                  </span>
+                ) : (
+                  <span>Puja ciega: nadie más ve tu oferta, ni sabes cuántas pujas hay. Las ofertas se abren al cierre.</span>
+                )}
                 <span className="xs">
                   Pujar es gratis. Si te adjudican, la comisión de Bidra es el {TARIFF_TEXT}
                   {total > 0 && <> — con este total, {eur2(feeFor(total))}</>}
@@ -360,8 +435,8 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
                 {T.myBid && dirty && (
                   <button type="button" className="btn btn-ghost" onClick={() => { setPrices(saved); setErr(""); setShowMissing(false); }}>Descartar cambios</button>
                 )}
-                <PrimaryButton className="btn-md" onClick={review} disabled={pending || (!!T.myBid && !dirty)}>
-                  {T.myBid ? "Actualizar puja" : "Enviar puja"}
+                <PrimaryButton className="btn-md" onClick={review} disabled={pending || (!tanteoMode && !!T.myBid && !dirty)}>
+                  {tanteoMode ? "Ejercer el tanteo" : T.myBid ? "Actualizar puja" : "Enviar puja"}
                 </PrimaryButton>
               </div>
             </div>
@@ -372,17 +447,36 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
       {confirm && (
         <div className="dialog-backdrop" onClick={() => !pending && setConfirm(false)}>
           <Blueprint className="dialog" role="dialog" aria-modal="true" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
-            <div className="dialog-title">{T.myBid ? "¿Actualizar tu puja?" : "¿Enviar tu puja?"}</div>
+            <div className="dialog-title">{tanteoMode ? "¿Ejercer el derecho de tanteo?" : T.myBid ? "¿Actualizar tu puja?" : "¿Enviar tu puja?"}</div>
             <div className="dialog-body stack" style={{ gap: 8 }}>
               <div className="cells" style={{ gridTemplateColumns: "1fr 1fr" }}>
                 <div style={{ padding: "10px 12px" }}><div className="label">Total sin IVA</div><div className="figure" style={{ fontSize: 22 }}>{eur(total)}</div></div>
                 <div style={{ padding: "10px 12px" }}><div className="label">Partidas</div><div className="figure" style={{ fontSize: 22 }}>{T.items.length}</div></div>
               </div>
-              <span>Nadie más verá tu oferta. Podrás modificarla hasta el cierre, {closeLabel(T.closesAt)}.</span>
+              <span>
+                {tanteoMode
+                  ? `Tu oferta pasará a ser de ${eur(total)} y ${T.owner} sabrá que has igualado la mejor. No podrás modificarla después.`
+                  : `Nadie más verá tu oferta. Podrás modificarla hasta el cierre, ${closeLabel(T.closesAt)}.`}
+              </span>
             </div>
             <div className="dialog-actions">
               <button className="btn btn-secondary" onClick={() => setConfirm(false)} disabled={pending}>Cancelar</button>
-              <button className="btn btn-primary" onClick={send} disabled={pending} autoFocus>{pending ? "Enviando…" : "Confirmar envío"}</button>
+              <button className="btn btn-primary" onClick={tanteoMode ? exercise : send} disabled={pending} autoFocus>
+                {pending ? "Enviando…" : tanteoMode ? "Ejercer el tanteo" : "Confirmar envío"}
+              </button>
+            </div>
+          </Blueprint>
+        </div>
+      )}
+
+      {confirmDecline && (
+        <div className="dialog-backdrop" onClick={() => !pending && setConfirmDecline(false)}>
+          <Blueprint className="dialog" role="dialog" aria-modal="true" onClick={(e: React.MouseEvent) => e.stopPropagation()}>
+            <div className="dialog-title">¿Renunciar al derecho de tanteo?</div>
+            <div className="dialog-body">Se mantendrá tu oferta original{T.myBid ? ` de ${eur(T.myBid.total)}` : ""} y {T.owner} podrá adjudicar sin esperar al plazo. No podrás cambiar de opinión.</div>
+            <div className="dialog-actions">
+              <button className="btn btn-secondary" onClick={() => setConfirmDecline(false)} disabled={pending}>Cancelar</button>
+              <button className="btn btn-primary" onClick={decline} disabled={pending}>{pending ? "Enviando…" : "Renunciar"}</button>
             </div>
           </Blueprint>
         </div>

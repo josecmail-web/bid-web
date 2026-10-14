@@ -9,6 +9,8 @@ import { eligibleIndustrials } from "../eligibility";
 import { closeExpired, currentYM } from "../queries";
 import { getTenderForIndustrial } from "../queries-industrial";
 import { readPriceSheet } from "../excel";
+import { afterTanteoAnswer } from "../tanteo";
+import { eur, eur2 } from "@/lib/format";
 import type { PriceImport } from "@/lib/prices";
 import { safe, str, UserError } from "../action-utils";
 import { CERTS } from "@/lib/catalog";
@@ -90,6 +92,73 @@ export async function submitBid(tenderId: string, unitPrices: number[]): Promise
       await tx.delete(s.bidItems).where(eq(s.bidItems.bidId, bidId));
       await tx.insert(s.bidItems).values(items.map((it, i) => ({ bidId, tenderItemId: it.id, unitPrice: Math.round(unitPrices[i] * 100) / 100 })));
     });
+    refresh();
+    return { ok: true };
+  });
+}
+
+/** Titular del tanteo con plazo abierto para este paquete (o error explicativo). */
+async function pendingTanteo(tenderId: string) {
+  const user = await requireAction("industrial");
+  const db = await getDb();
+  await closeExpired(db); // también vence los plazos de tanteo
+  const [row] = await db
+    .select({ r: s.tenderTanteo, t: s.tenders })
+    .from(s.tenderTanteo)
+    .innerJoin(s.tenders, eq(s.tenders.id, s.tenderTanteo.tenderId))
+    .where(and(eq(s.tenderTanteo.tenderId, tenderId), eq(s.tenderTanteo.companyId, user.companyId)));
+  if (!row) throw new UserError("No tienes derecho de tanteo en este paquete.");
+  if (row.r.status === "matched" || row.r.status === "declined") throw new UserError("Ya has respondido a este derecho de tanteo.");
+  if (row.r.status !== "pending" || row.t.status !== "evaluacion" || !row.t.tanteoUntil || row.t.tanteoUntil <= new Date())
+    throw new UserError("El plazo para ejercer el derecho de tanteo ha terminado.");
+  return { user, db, r: row.r, t: row.t };
+}
+
+/**
+ * Ejerce el derecho de tanteo: nuevos precios por partida cuyo total iguale (o mejore) la mejor oferta.
+ * Sustituye a la puja del titular.
+ */
+export async function exerciseTanteo(tenderId: string, unitPrices: number[]): Promise<ActionResult<{ total: number }>> {
+  return safe(async () => {
+    const { user, db, r, t } = await pendingTanteo(tenderId);
+    const items = await db
+      .select({ id: s.tenderItems.id, q: s.tenderItems.quantity })
+      .from(s.tenderItems)
+      .where(eq(s.tenderItems.tenderId, t.id))
+      .orderBy(s.tenderItems.position);
+    if (unitPrices.length !== items.length || unitPrices.some((p) => !Number.isFinite(p) || p <= 0 || p > 1e9))
+      throw new UserError("Indica un precio unitario válido para cada partida.");
+    const rounded = unitPrices.map((p) => Math.round(p * 100) / 100);
+    const total = rounded.reduce((a, p, i) => a + p * items[i].q, 0);
+    if (total > r.bestTotal! + 0.01)
+      throw new UserError(`Para igualar la mejor oferta tu total debe ser como máximo ${eur2(r.bestTotal!)}. Ahora es ${eur2(total)}.`);
+
+    const [bid] = await db.select({ id: s.bids.id }).from(s.bids).where(and(eq(s.bids.tenderId, t.id), eq(s.bids.companyId, user.companyId)));
+    if (!bid) throw new UserError("No encontramos tu puja en este paquete.");
+    await db.transaction(async (tx) => {
+      await tx.update(s.bids).set({ updatedAt: new Date() }).where(eq(s.bids.id, bid.id));
+      await tx.delete(s.bidItems).where(eq(s.bidItems.bidId, bid.id));
+      await tx.insert(s.bidItems).values(items.map((it, i) => ({ bidId: bid.id, tenderItemId: it.id, unitPrice: rounded[i] })));
+      await tx
+        .update(s.tenderTanteo)
+        .set({ status: "matched", decidedAt: new Date() })
+        .where(and(eq(s.tenderTanteo.tenderId, t.id), eq(s.tenderTanteo.companyId, user.companyId)));
+    });
+    await afterTanteoAnswer(db, t, `${user.companyName} ha ejercido su derecho de tanteo en ${t.id}: iguala la mejor oferta con ${eur(total)} (antes ${eur(r.originalTotal ?? 0)}).`);
+    refresh();
+    return { ok: true, total };
+  });
+}
+
+/** Renuncia al derecho de tanteo: se mantiene su oferta original. */
+export async function declineTanteo(tenderId: string): Promise<ActionResult> {
+  return safe(async () => {
+    const { user, db, t } = await pendingTanteo(tenderId);
+    await db
+      .update(s.tenderTanteo)
+      .set({ status: "declined", decidedAt: new Date() })
+      .where(and(eq(s.tenderTanteo.tenderId, t.id), eq(s.tenderTanteo.companyId, user.companyId)));
+    await afterTanteoAnswer(db, t, `${user.companyName} ha renunciado a su derecho de tanteo en ${t.id}; se mantiene su oferta original.`);
     refresh();
     return { ok: true };
   });

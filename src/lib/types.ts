@@ -26,6 +26,20 @@ export type Unit = string;
 
 export type TenderStatus = "borrador" | "abierta" | "evaluacion" | "adjudicada";
 
+/**
+ * Derecho de tanteo de un titular: holder (puja abierta) → al cierre: best (ya es la mejor oferta),
+ * nobid (no pujó, lo pierde) o pending (puede igualar 72 h) → matched | declined | expired.
+ */
+export type TanteoStatus = "holder" | "best" | "pending" | "matched" | "declined" | "expired" | "nobid";
+
+/** Industrial elegido como titular del tanteo en el asistente. */
+export interface TanteoPick {
+  id: string;
+  name: string;
+  city: string;
+  trades: string[];
+}
+
 export type CertStatus = "pending" | "ok" | "rejected";
 
 /** [Calidad, Plazos, Limpieza, Trato] */
@@ -98,6 +112,8 @@ export interface TenderCardDTO {
   awardedTotal: number | null;
   /** adjudicada y aún sin valorar por la promotora */
   needsReview: boolean;
+  /** plazo de tanteo en curso (no se puede adjudicar hasta entonces) */
+  tanteoUntil: string | null;
 }
 
 export interface BidderDTO {
@@ -126,6 +142,13 @@ export interface TenderDetailDTO {
   awardedCompanyId: string | null;
   /** valoración de la promotora al adjudicatario (si ya la ha hecho) */
   review: GivenReviewDTO | null;
+  /** derecho de tanteo: titulares y plazo (null si el paquete no tiene) */
+  tanteo: {
+    holders: { id: string; name: string; status: TanteoStatus; original: number | null; best: number | null }[];
+    /** fin del plazo para igualar; mientras esté activo no se puede adjudicar */
+    until: string | null;
+    active: boolean;
+  } | null;
 }
 
 export interface GivenReviewDTO {
@@ -190,6 +213,8 @@ export interface WizardState {
   min: "Cualquiera" | "3+" | "4+" | "4,5+";
   refs: Record<string, string>;
   extra: CertId[];
+  /** titulares del derecho de tanteo (cada uno solo en los paquetes de sus oficios) */
+  tanteo: TanteoPick[];
 }
 
 export interface VerificationDTO {
@@ -276,6 +301,10 @@ export interface IndustrialTenderCardDTO {
   ratingTooLow: boolean;
   myBid: { total: number; updatedAt: string } | null;
   result: BidResult;
+  /** el paquete tiene derecho de tanteo (se avisa a todos, sin decir quién lo tiene) */
+  tanteo: boolean;
+  /** mi derecho de tanteo en este paquete, si soy titular */
+  myTanteo: { status: TanteoStatus; best: number | null; until: string | null } | null;
 }
 
 export interface IndustrialTenderDTO extends IndustrialTenderCardDTO {
