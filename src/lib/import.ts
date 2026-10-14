@@ -58,7 +58,9 @@ export function toNum(x: Cell): number {
  */
 function headerMap(row: Cell[]): ColMap {
   const m: ColMap = {};
-  const cells = row.map((c) => norm(c).trim());
+  // Las cabeceras son etiquetas cortas: así no confundimos con cabecera un texto del bloque de datos de
+  // la obra ("Se debe cumplimentar la plantilla… por partidas") que suele ir encima de la tabla.
+  const cells = row.map((c) => norm(c).trim()).map((t) => (t.length > 40 ? "" : t));
   const isCode = (t: string) => /^(cod|ref|n[o°º.]\s|num|id$)/.test(t);
   // Código: preferir el de la partida si hay varios ("Cód. Capítulo", "Cód. Partida")
   const codes = cells.map((t, i) => (t && isCode(t) ? i : -1)).filter((i) => i >= 0);
@@ -103,9 +105,10 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
   const rows = aoa.filter((r) => r.some((c) => String(c ?? "").trim() !== ""));
   let hi = -1;
   let map: ColMap = {};
-  for (let i = 0; i < Math.min(rows.length, 15); i++) {
+  for (let i = 0; i < Math.min(rows.length, 40); i++) {
     const m = headerMap(rows[i]);
-    if (m.desc !== undefined) {
+    // Además de la descripción, una cabecera de verdad trae medición, unidad o código
+    if (m.desc !== undefined && (m.qty !== undefined || m.unit !== undefined || m.code !== undefined)) {
       hi = i;
       map = m;
       break;
@@ -120,12 +123,21 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
   const out: WizardRow[] = [];
   const seen = new Set<string>();
   const get = (r: Cell[], k: keyof ColMap) => (map[k] !== undefined ? String(r[map[k]!] ?? "").trim() : "");
+  let prevItem = false; // la fila anterior era una partida
   for (const r of rows.slice(hi + 1)) {
     const d = get(r, "desc");
-    if (!d) continue;
     const code = get(r, "code");
     const q = map.qty !== undefined ? toNum(r[map.qty]) : 0;
     const u = get(r, "unit");
+    if (!d) {
+      // Capítulo escrito en la columna de código ("05 - FÁBRICAS, TABIQUES…", "PRESUPUESTO PARCIAL Nº 4.- …")
+      if (map.nat === undefined && !q && !u && /\p{L}{3}/u.test(code)) {
+        chapter = code;
+        chapters++;
+        prevItem = false;
+      }
+      continue;
+    }
 
     // Con columna de naturaleza (Presto): solo capítulos y partidas; se ignoran descompuestos
     // (mano de obra, material, maquinaria…) y las filas de texto largo sin naturaleza.
@@ -142,12 +154,14 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
       }
     } else if (!q && !u) {
       // Sin medición ni unidad: título de capítulo… salvo que sea la descripción larga de la
-      // partida anterior (sin código y con texto largo), que no debe tomarse como capítulo.
-      if (!code && d.length > 90) continue;
+      // partida anterior (sin código, y larga o justo debajo de una partida sin ir en mayúsculas).
+      if (!code && (d.length > 90 || (prevItem && d !== d.toUpperCase()))) continue;
       chapter = d;
       chapters++;
+      prevItem = false;
       continue;
     }
+    prevItem = true;
 
     // Desgloses que repiten la misma partida en varias filas (una por capa o tipo de trabajo)
     const key = [code, d, u, q].join("|");
