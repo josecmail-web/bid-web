@@ -66,6 +66,7 @@ function sanitize(w: WizardState, companyId: string): WizardState {
     sector: (SECTOR_NAMES as string[]).includes(p.sector) ? p.sector : "",
     on: !!p.on,
     chapter: p.chapter ? cut(p.chapter, 300) : undefined,
+    long: p.long ? cut(p.long, 8000) : undefined,
   })) as WizardState["partidas"];
   return {
     step: 0,
@@ -150,7 +151,7 @@ export async function publishTenders(input: WizardState, closeIso: string): Prom
           referenceBudget: ref > 0 ? ref : null, scope: w.scope, minRating, requiredCerts: req, publishedAt: new Date(),
         });
         await tx.insert(s.tenderItems).values(
-          inc.filter((p) => p.sector === sec).map((p, position) => ({ tenderId: id, position, code: p.code, description: p.d, unit: p.u, quantity: p.q, chapter: p.chapter ?? null })),
+          inc.filter((p) => p.sector === sec).map((p, position) => ({ tenderId: id, position, code: p.code, description: p.d, longDescription: p.long ?? null, unit: p.u, quantity: p.q, chapter: p.chapter ?? null })),
         );
         out.push({ id, sector: sec, req });
       }

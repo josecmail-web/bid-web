@@ -56,7 +56,7 @@ export function bidWorkbook(T: IndustrialTenderDTO): Buffer {
     ["Cierre de la puja", closeLabel(T.closesAt)],
     ["Cómo usarlo", "Rellena la columna E en € sin IVA y súbelo en BID con «Subir Excel con precios». No cambies los códigos."],
     [],
-    ["Código", "Descripción", "Ud", "Medición", "Precio unitario (€)", "Importe (€)"],
+    ["Código", "Descripción", "Ud", "Medición", "Precio unitario (€)", "Importe (€)", "Descripción completa"],
   ];
   const first = head.length + 1; // fila Excel (1-based) de la primera partida
   const ws = XLSX.utils.aoa_to_sheet(head);
@@ -69,13 +69,14 @@ export function bidWorkbook(T: IndustrialTenderDTO): Buffer {
     if (price !== undefined) ws[`E${r}`] = { t: "n", v: price, z: EUR_FMT };
     else ws[`E${r}`] = { t: "z" };
     ws[`F${r}`] = { t: "n", f: `IF(E${r}="","",D${r}*E${r})`, z: EUR_FMT };
+    if (it.long) ws[`G${r}`] = { t: "s", v: it.long };
   });
   const last = first + T.items.length - 1;
   const tr = last + 1;
   XLSX.utils.sheet_add_aoa(ws, [["", "Total sin IVA"]], { origin: `A${tr}` });
   ws[`F${tr}`] = { t: "n", f: `SUM(F${first}:F${last})`, z: EUR_FMT };
-  ws["!ref"] = `A1:F${tr}`;
-  ws["!cols"] = [{ wch: 10 }, { wch: 60 }, { wch: 6 }, { wch: 12 }, { wch: 18 }, { wch: 16 }];
+  ws["!ref"] = `A1:G${tr}`;
+  ws["!cols"] = [{ wch: 10 }, { wch: 60 }, { wch: 6 }, { wch: 12 }, { wch: 18 }, { wch: 16 }, { wch: 90 }];
   const wb = XLSX.utils.book_new();
   XLSX.utils.book_append_sheet(wb, ws, "Presupuesto");
   return XLSX.write(wb, { type: "buffer", bookType: "xlsx" }) as Buffer;

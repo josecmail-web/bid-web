@@ -10,7 +10,7 @@ import { importRows, mkRow, type ImportResult } from "@/lib/import";
 import { validateWizardStep } from "@/lib/rules";
 import { parseExcel, publishTenders, saveDraft as saveDraftAction, uploadProjectFile } from "@/server/actions/promotora";
 import type { Sector, SectorOrNone, WizardRow, WizardState } from "@/lib/types";
-import { Blueprint, Chips, Field, PrimaryButton, Seg } from "@/components/ui";
+import { Blueprint, Chips, Field, ItemText, PrimaryButton, Seg } from "@/components/ui";
 
 const LABELS = ["Obra", "Partidas", "Condiciones", "Revisar"];
 
@@ -259,7 +259,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
                             style={{ gap: "6px 12px", padding: "8px 14px", borderBottom: "1px solid color-mix(in srgb, var(--color-text) 8%, transparent)", opacity: r.on ? 1 : 0.45 }}
                           >
                             <span className="mono" style={{ width: 48, color: "var(--color-neutral-600)" }}>{r.code}</span>
-                            <span style={{ flex: "1 1 240px", fontSize: 14, textDecoration: r.on ? "none" : "line-through" }}>{r.d}</span>
+                            <ItemText d={r.d} long={r.long} style={{ flex: "1 1 240px", fontSize: 14, textDecoration: r.on ? "none" : "line-through" }} />
                             {r.q > 0 ? (
                               <span className="num muted" style={{ width: 110, textAlign: "right", fontSize: 13 }}>{num(r.q) + " " + r.u}</span>
                             ) : (

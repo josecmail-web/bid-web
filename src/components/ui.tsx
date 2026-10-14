@@ -212,3 +212,18 @@ export function StarInput({ value, onChange, label }: { value: number; onChange:
     </div>
   );
 }
+
+/** Resumen de una partida y, si la tiene, su descripción técnica completa (plegada). */
+export function ItemText({ d, long, style }: { d: string; long?: string; style?: CSSProperties }) {
+  return (
+    <div style={{ minWidth: 0, ...style }}>
+      <div>{d}</div>
+      {long && (
+        <details className="item-long">
+          <summary>Descripción completa</summary>
+          <div>{long}</div>
+        </details>
+      )}
+    </div>
+  );
+}

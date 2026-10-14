@@ -10,7 +10,7 @@ import type { TenderDetailDTO } from "@/lib/types";
 import { avg, dot, eur, eur2, num, pct, stars } from "@/lib/format";
 import { tenderCloseText } from "@/lib/tender";
 import { STATUS } from "@/lib/catalog";
-import { Blueprint, CatBars, Seg } from "@/components/ui";
+import { Blueprint, CatBars, ItemText, Seg } from "@/components/ui";
 import { ReviewBlock } from "./ReviewBlock";
 
 /** Resalta el importe más bajo de cada partida (ajuste del prototipo). */
@@ -173,7 +173,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
                               <div className="row" style={{ gap: 10, flexWrap: "nowrap", alignItems: "flex-start" }}>
                                 <span className="mono" style={{ color: "var(--color-neutral-600)", paddingTop: 2 }}>{p.code}</span>
                                 <div>
-                                  <div>{p.d}</div>
+                                  <ItemText d={p.d} long={p.long} />
                                   <div className="xs muted">{num(p.q)} {p.u}</div>
                                 </div>
                               </div>
@@ -270,7 +270,7 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
                 {T.items.map((p, i) => (
                   <tr key={i}>
                     <td className="mono-12" style={{ color: "var(--color-neutral-600)" }}>{p.code}</td>
-                    <td>{p.d}</td>
+                    <td><ItemText d={p.d} long={p.long} /></td>
                     <td className="r num">{num(p.q)} {p.u}</td>
                   </tr>
                 ))}

@@ -7,7 +7,7 @@ import { pad } from "./format";
  *  para el Excel de ejemplo y el alta manual de partidas. */
 
 export type Cell = string | number | boolean | null | undefined;
-type ColMap = { chap?: number; desc?: number; qty?: number; unit?: number; code?: number; nat?: number };
+type ColMap = { chap?: number; desc?: number; long?: number; qty?: number; unit?: number; code?: number; nat?: number };
 
 export const norm = (t: Cell) =>
   String(t ?? "")
@@ -70,6 +70,8 @@ function headerMap(row: Cell[]): ColMap {
     if (m.nat === undefined && /^nat(\.|uraleza)?$/.test(t)) m.nat = i;
     else if (m.chap === undefined && /^(capitulo|cap\.?)$/.test(t)) m.chap = i;
     else if (m.desc === undefined && /(desc|concepto|resumen|partida|texto|denomin)/.test(t)) m.desc = i;
+    // Segunda columna de texto ("Resumen" + "Descripción"/"Texto"): la descripción larga
+    else if (m.long === undefined && /(desc|texto|concepto)/.test(t)) m.long = i;
     else if (m.qty === undefined && /(medic|cantidad|^cant|^med|canpres|^can[\s.]|^uds?\.? ?totales)/.test(t)) m.qty = i;
     else if (m.unit === undefined && /^(ud|uds|un|unid|unidad)\b/.test(t)) m.unit = i;
   });
@@ -123,7 +125,12 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
   const out: WizardRow[] = [];
   const seen = new Set<string>();
   const get = (r: Cell[], k: keyof ColMap) => (map[k] !== undefined ? String(r[map[k]!] ?? "").trim() : "");
-  let prevItem = false; // la fila anterior era una partida
+  // Última partida leída: las filas sin código que la siguen son su descripción larga
+  let prev: WizardRow | null = null;
+  const addLong = (p: WizardRow, t: string) => {
+    if (t === p.d) return;
+    p.long = p.long ? p.long + "\n" + t : t;
+  };
   for (const r of rows.slice(hi + 1)) {
     const d = get(r, "desc");
     const code = get(r, "code");
@@ -134,8 +141,8 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
       if (map.nat === undefined && !q && !u && /\p{L}{3}/u.test(code)) {
         chapter = code;
         chapters++;
-        prevItem = false;
-      }
+        prev = null;
+      } else if (prev && !code && get(r, "long")) addLong(prev, get(r, "long"));
       continue;
     }
 
@@ -150,30 +157,42 @@ export function importRows(aoa: Cell[][], name: string): ImportResult {
       }
       if (!/^part/.test(nat)) {
         if (nat) skipped++;
+        else if (!code && prev) addLong(prev, d);
+        if (nat) prev = null;
         continue;
       }
     } else if (!q && !u) {
       // Sin medición ni unidad: título de capítulo… salvo que sea la descripción larga de la
       // partida anterior (sin código, y larga o justo debajo de una partida sin ir en mayúsculas).
-      if (!code && (d.length > 90 || (prevItem && d !== d.toUpperCase()))) continue;
+      if (!code && (d.length > 90 || (prev && d !== d.toUpperCase()))) {
+        if (prev) addLong(prev, d);
+        continue;
+      }
       chapter = d;
       chapters++;
-      prevItem = false;
+      prev = null;
       continue;
     }
-    prevItem = true;
 
     // Desgloses que repiten la misma partida en varias filas (una por capa o tipo de trabajo)
     const key = [code, d, u, q].join("|");
-    if (code && seen.has(key)) continue;
+    if (code && seen.has(key)) {
+      prev = null;
+      continue;
+    }
     seen.add(key);
 
-    out.push(mkRow(d, u, q, get(r, "chap") || chapter, code || pad(out.length + 1)));
+    prev = mkRow(d, u, q, get(r, "chap") || chapter, code || pad(out.length + 1));
+    const long = get(r, "long");
+    if (long) addLong(prev, long);
+    out.push(prev);
   }
   if (!out.length) return { ok: false, error: "No hemos encontrado partidas en " + name + "." };
 
-  const labels: [keyof ColMap, string][] = [["code", "código"], ["nat", "naturaleza"], ["desc", "descripción"], ["unit", "unidad"], ["qty", "medición"], ["chap", "capítulo"]];
+  const labels: [keyof ColMap, string][] = [["code", "código"], ["nat", "naturaleza"], ["desc", "descripción"], ["long", "descripción larga"], ["unit", "unidad"], ["qty", "medición"], ["chap", "capítulo"]];
   const found = labels.filter(([k]) => map[k] !== undefined).map((x) => x[1]);
+  const withLong = out.filter((p) => p.long).length;
+  if (map.long === undefined && withLong) found.push("descripción larga");
   const note =
     "Columnas detectadas: " + found.join(", ") +
     (chapters ? " · " + chapters + (chapters === 1 ? " capítulo" : " capítulos") : "") +

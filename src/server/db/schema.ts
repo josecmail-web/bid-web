@@ -198,6 +198,8 @@ export const tenderItems = pgTable("tender_items", {
   position: integer("position").notNull(),
   code: text("code").notNull(),
   description: text("description").notNull(),
+  /** texto técnico completo de la partida (el del Excel de mediciones), si lo hay */
+  longDescription: text("long_description"),
   unit: text("unit").notNull(),
   quantity: doublePrecision("quantity").notNull(),
   chapter: text("chapter"),

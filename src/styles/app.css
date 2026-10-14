@@ -184,3 +184,8 @@ html.fonts { --font-heading: var(--font-bc), "Barlow Condensed", system-ui, sans
 /* — enlace a la cuenta en la cabecera — */
 .account-link { font-size: 13px; color: var(--color-neutral-700); text-decoration: none; }
 .account-link:hover, .account-link[aria-current="page"] { color: var(--color-accent-700); text-decoration: underline; text-underline-offset: 3px; }
+
+/* descripción técnica completa de una partida */
+.item-long { margin-top: 4px; font-size: 13px; }
+.item-long > summary { cursor: pointer; width: fit-content; color: var(--color-accent-700); font-size: 12px; }
+.item-long > div { margin-top: 6px; white-space: pre-line; color: var(--color-neutral-700); line-height: 1.5; max-width: 72ch; }

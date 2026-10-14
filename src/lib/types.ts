@@ -76,6 +76,8 @@ export interface IndustrialProfileDTO {
 export interface TenderItem {
   code: string;
   d: string;
+  /** descripción técnica completa, si la trae el Excel */
+  long?: string;
   u: Unit;
   q: number;
 }
@@ -162,6 +164,8 @@ export interface WizardRow {
   sector: SectorOrNone;
   on: boolean;
   chapter?: string;
+  /** descripción técnica completa, si la trae el Excel */
+  long?: string;
 }
 
 export interface WizardFile {

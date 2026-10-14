@@ -167,7 +167,7 @@ export async function getOwnerTender(ownerId: string, id: string): Promise<Tende
   const base: TenderDetailDTO = {
     id: t.id, title: t.title, obra: row.obra ?? "—", loc: row.loc ?? "—", sector: t.sector, status: t.status,
     closesAt: iso(t.closesAt), ref: t.referenceBudget, req: t.requiredCerts as CertId[],
-    items: items.map((i) => ({ code: i.code, d: i.description, u: i.unit, q: i.quantity })),
+    items: items.map((i) => ({ code: i.code, d: i.description, ...(i.longDescription ? { long: i.longDescription } : {}), u: i.unit, q: i.quantity })),
     sealed: bidRows.length, bids: [], awardedCompanyId: null, review: null,
   };
   // Puja ciega: con la puja abierta no salen de aquí ni importes ni identidades.

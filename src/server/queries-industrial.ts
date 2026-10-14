@@ -123,7 +123,7 @@ export async function getTenderForIndustrial(companyId: string, id: string): Pro
     description: project?.description ?? null,
     startMonth: project?.startMonth ?? null,
     files: files.map((f) => ({ name: f.fileName, url: fileUrl(f.fileKey)! })),
-    items: items.map((i) => ({ code: i.code, d: i.description, u: i.unit, q: i.quantity })),
+    items: items.map((i) => ({ code: i.code, d: i.description, ...(i.longDescription ? { long: i.longDescription } : {}), u: i.unit, q: i.quantity })),
     myPrices,
     verified: c?.v === "approved",
     // La valoración de la obra solo la ve el adjudicatario

@@ -9,7 +9,7 @@ import { avg, closeLabel, dateLabel, dec1, eur, ratingMin, eur2, num, parsePrice
 import { importBidPrices, submitBid } from "@/server/actions/industrial";
 import type { IndustrialTenderDTO } from "@/lib/types";
 import { PILOT, TARIFF_TEXT, feeFor } from "@/lib/pricing";
-import { Blueprint, PrimaryButton } from "@/components/ui";
+import { Blueprint, ItemText, PrimaryButton } from "@/components/ui";
 
 const draftKey = (id: string) => "bid-draft:" + id;
 
@@ -299,7 +299,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
                       <td style={{ padding: "10px 12px" }}>
                         <div className="row" style={{ gap: 10, flexWrap: "nowrap", alignItems: "flex-start" }}>
                           <span className="mono" style={{ color: "var(--color-neutral-600)", paddingTop: 2 }}>{p.code}</span>
-                          <span>{p.d}</span>
+                          <ItemText d={p.d} long={p.long} />
                         </div>
                       </td>
                       <td className="r num muted" style={{ padding: "10px 12px" }}>{num(p.q)} {p.u}</td>

@@ -1,0 +1,1 @@
+ALTER TABLE "tender_items" ADD COLUMN "long_description" text;
