@@ -186,7 +186,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
           <>
             <div className="row between" style={{ alignItems: "baseline", gap: 8 }}>
               <h3>Partidas</h3>
-              <span className="small muted">Se publica un paquete por sector para que pujen los industriales de cada oficio.</span>
+              <span className="small muted">Se publica un paquete por sector para que pujen los industriales de cada sector.</span>
             </div>
             <Blueprint
               className={"dropzone" + (drag ? " drag" : "")}
@@ -333,7 +333,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
             </div>
             <Field label="¿Quién puede pujar?">
               <div className="stack" style={{ gap: 8 }}>
-                {([["abierta", "Abierta a industriales verificados del oficio en la zona"], ["invitacion", "Solo industriales invitados"]] as const).map(([k, label]) => (
+                {([["abierta", "Abierta a industriales verificados del sector en la zona"], ["invitacion", "Solo industriales invitados"]] as const).map(([k, label]) => (
                   <label key={k} className="radio">
                     <input type="radio" name="scope" checked={W.scope === k} onChange={() => setWz("scope", k)} />
                     <span className="dot" />
@@ -348,7 +348,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
             <Field label="Certificados adicionales exigidos">
               <Chips options={EXTRA_CERTS} value={W.extra} onChange={(v) => setWz("extra", v)} label={(id) => CERTS[id].code + " · " + CERTS[id].name} />
               <div className="xs muted" style={{ marginTop: 6 }}>
-                Cada paquete exige además REA y los certificados obligatorios de su oficio (p. ej. Electricidad → IBT, Climatización → RITE y F-GAS).
+                Cada paquete exige además REA y los certificados obligatorios de su sector (p. ej. Electricidad → IBT, Climatización → RITE y F-GAS).
               </div>
             </Field>
             <Field label="Derecho de tanteo (opcional)">

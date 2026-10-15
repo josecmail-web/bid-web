@@ -32,7 +32,7 @@ export default function CondicionesPage() {
         <Section n="2" title="Registro y verificación">
           Cada empresa aporta datos y documentación veraces (CIF/NIF, REA, seguro de responsabilidad civil, escrituras o poderes).
           Bidra revisa la documentación antes de permitir publicar o pujar y puede solicitar más documentos, rechazar o suspender cuentas.
-          Los certificados que dan acceso a cada oficio deben estar vigentes; al caducar, se pierde el acceso.
+          Los certificados que dan acceso a cada sector deben estar vigentes; al caducar, se pierde el acceso.
         </Section>
 
         <Section n="3" title="Puja ciega">

@@ -70,7 +70,7 @@ export function AccountView({ data }: { data: AccountDTO }) {
                 ["CIF / NIF", c.cif],
                 ["Provincia", c.province],
                 ["Email de contacto", c.email],
-                ...(c.type === "industrial" ? [["Oficios", c.trades.join(", ") || "—"] as [string, string]] : []),
+                ...(c.type === "industrial" ? [["Sectores", c.trades.join(", ") || "—"] as [string, string]] : []),
               ] as [string, string][]
             ).map(([k, v]) => (
               <div key={k} style={{ padding: "12px 14px" }}>

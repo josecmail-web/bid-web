@@ -78,7 +78,7 @@ export async function submitBid(tenderId: string, unitPrices: number[]): Promise
     if (!t || t.status !== "abierta" || !t.closesAt || t.closesAt <= new Date()) throw new UserError("Esta partida no admite pujas.");
     if (t.scope === "invitacion") throw new UserError("Esta partida es solo para industriales invitados.");
     const ok = await eligibleIndustrials(db, t.sector, t.requiredCerts, t.minRating, [user.companyId]);
-    if (!ok.length) throw new UserError("No cumples los requisitos de esta partida (oficio, certificados o valoración mínima).");
+    if (!ok.length) throw new UserError("No cumples los requisitos de esta partida (sector, certificados o valoración mínima).");
 
     const items = await db.select({ id: s.tenderItems.id }).from(s.tenderItems).where(eq(s.tenderItems.tenderId, t.id)).orderBy(s.tenderItems.position);
     if (unitPrices.length !== items.length || unitPrices.some((p) => !Number.isFinite(p) || p <= 0 || p > 1e9))

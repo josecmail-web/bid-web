@@ -62,7 +62,7 @@ export function IndustrialProfile({ me, mine }: { me: IndustrialProfileDTO; mine
     <div className="stack" style={{ gap: 30 }}>
       <div className="row between" style={{ alignItems: "flex-end", gap: 16 }}>
         <div>
-          <div className="kicker">Industrial · {me.trades.join(", ") || "Sin oficios"}</div>
+          <div className="kicker">Industrial · {me.trades.join(", ") || "Sin sectores"}</div>
           <h1 style={{ marginTop: 2 }}>{me.name}</h1>
           <div className="muted">{me.city} · {me.jobs} obras · {me.r ? dec1(avg(me.r)) : "—"} ★</div>
         </div>
@@ -72,7 +72,7 @@ export function IndustrialProfile({ me, mine }: { me: IndustrialProfileDTO; mine
       <div className="stack" style={{ gap: 12 }}>
         <div className="row between" style={{ alignItems: "baseline", gap: 8 }}>
           <h3>Trabajos a los que tienes acceso</h3>
-          <span className="small muted">Cada oficio exige REA y sus certificados. Las promotoras pueden pedir además ISO.</span>
+          <span className="small muted">Cada sector exige REA y sus certificados. Las promotoras pueden pedir además ISO.</span>
         </div>
         <div className="cells" style={{ gridTemplateColumns: "repeat(auto-fill,minmax(190px,1fr))" }}>
           {SECTOR_NAMES.map((sec) => {

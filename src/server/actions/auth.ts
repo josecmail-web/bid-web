@@ -115,7 +115,7 @@ export async function register(fd: FormData): Promise<ActionResult<{ home: strin
       try {
         trades = (JSON.parse(str(fd.get("trades")) || "[]") as string[]).filter((t) => (TRADES as string[]).includes(t));
       } catch {}
-      if (!trades.length) throw new UserError("Selecciona al menos un oficio.");
+      if (!trades.length) throw new UserError("Selecciona al menos un sector.");
     }
     const kind = KINDS.includes(str(fd.get("kind"))) ? str(fd.get("kind")) : "Promotora";
     const vol = VOLUMES.includes(str(fd.get("vol"))) ? str(fd.get("vol")) : null;

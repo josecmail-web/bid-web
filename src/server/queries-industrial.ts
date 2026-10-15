@@ -12,7 +12,7 @@ import type { BidResult, CertId, IndustrialTenderCardDTO, IndustrialTenderDTO } 
 
 const iso = (d: Date | null) => (d ? d.toISOString() : null);
 
-/** Contexto de elegibilidad de una empresa: oficios, certificados vigentes y valoración. */
+/** Contexto de elegibilidad de una empresa: sectores, certificados vigentes y valoración. */
 export async function eligibilityContext(db: DB, companyId: string) {
   const [c] = await db.select().from(s.companies).where(eq(s.companies.id, companyId));
   const certs = await db.select().from(s.certificates).where(eq(s.certificates.companyId, companyId));
@@ -78,7 +78,7 @@ function baseSelect(db: DB) {
     .leftJoin(s.projects, eq(s.projects.id, s.tenders.projectId));
 }
 
-/** Paquetes abiertos de mis oficios (con acceso o bloqueados), por cierre más próximo. */
+/** Paquetes abiertos de mis sectores (con acceso o bloqueados), por cierre más próximo. */
 export async function listOpenForIndustrial(companyId: string) {
   const db = await getDb();
   await closeExpired(db);

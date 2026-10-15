@@ -36,7 +36,7 @@ interface Reg {
 
 const TYPE_OPTS = [
   ["promotora", "Promotora o constructora", "Publica trabajos y partidas, recibe presupuestos ciegos y adjudica."],
-  ["industrial", "Industrial de la construcción", "Puja con tu presupuesto por los trabajos de tu oficio y acumula valoraciones."],
+  ["industrial", "Industrial de la construcción", "Puja con tu presupuesto por los trabajos de tu sector y acumula valoraciones."],
 ] as const;
 
 export default function RegistroPage() {
@@ -69,7 +69,7 @@ export default function RegistroPage() {
       const pw = passwordError(reg.pass, reg.email.trim());
       if (pw) return pw;
     }
-    if (step === "detail" && reg.type === "industrial" && !reg.trades.length) return "Selecciona al menos un oficio.";
+    if (step === "detail" && reg.type === "industrial" && !reg.trades.length) return "Selecciona al menos un sector.";
     if (step === "docs" && docList.some(([d]) => !reg.docs[d])) return "Faltan documentos por subir.";
     if (step === "docs" && !terms) return "Acepta las condiciones de uso para continuar.";
     return "";
@@ -195,8 +195,8 @@ export default function RegistroPage() {
 
         {step === "detail" && reg.type === "industrial" && (
           <>
-            <h2 style={{ fontSize: 30 }}>Oficios y zona</h2>
-            <Field label="Oficios en los que vas a pujar"><Chips options={TRADES} value={reg.trades} onChange={(v) => set("trades", v)} /></Field>
+            <h2 style={{ fontSize: 30 }}>Sectores y zona</h2>
+            <Field label="Sectores en los que vas a pujar"><Chips options={TRADES} value={reg.trades} onChange={(v) => set("trades", v)} /></Field>
             <Field label="Radio de trabajo"><Seg options={RADII} value={reg.radius} onChange={(v) => set("radius", v)} /></Field>
           </>
         )}

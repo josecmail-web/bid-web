@@ -3,7 +3,7 @@ import { schema as s, type DB } from "./db";
 import { currentYM, ratingsFor } from "./queries";
 
 /**
- * Un industrial puede ver y pujar un paquete si: está verificado, trabaja el oficio, tiene todos los
+ * Un industrial puede ver y pujar un paquete si: está verificado, trabaja el sector, tiene todos los
  * certificados exigidos validados y vigentes, y cumple la valoración mínima (sin valoraciones = no cumple
  * si se exige mínimo). TODO: radio de trabajo (provincia/comunidad) y paquetes por invitación.
  */

@@ -66,7 +66,7 @@ export function TanteoPicker({ value, onChange, sectors }: { value: TanteoPick[]
                   <span style={{ fontWeight: 500 }}>{p.name}</span>
                   <span className="xs muted">
                     {p.city}
-                    {secs.length ? " · tanteo en " + secs.join(", ") : " · no trabaja en ningún oficio de estas partidas: no tendrá tanteo"}
+                    {secs.length ? " · tanteo en " + secs.join(", ") : " · no trabaja en ningún sector de estas partidas: no tendrá tanteo"}
                   </span>
                 </span>
                 <button type="button" className="btn btn-ghost" aria-label={"Quitar a " + p.name} onClick={() => onChange(value.filter((x) => x.id !== p.id))}>
@@ -91,7 +91,7 @@ export function TanteoPicker({ value, onChange, sectors }: { value: TanteoPick[]
                     .map((r) => (
                       <button key={r.id} type="button" className="linklike" onClick={() => add(r)} style={{ textAlign: "left", padding: "8px 12px", borderBottom: "1px solid var(--color-divider)" }}>
                         <span style={{ fontWeight: 500 }}>{r.name}</span>
-                        <span className="xs muted"> · {r.city} · {r.trades.join(", ") || "sin oficios"}</span>
+                        <span className="xs muted"> · {r.city} · {r.trades.join(", ") || "sin sectores"}</span>
                       </button>
                     ))}
                   {!searching && !results.length && <span className="xs muted" style={{ padding: "8px 12px" }}>Ningún industrial verificado con ese nombre o CIF.</span>}

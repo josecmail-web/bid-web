@@ -5,7 +5,7 @@ import { appUrl, sendEmail } from "./mail";
 
 /** Asunto y botón del email según el tipo de aviso. */
 const EMAIL: Record<string, { subject: string; action: string }> = {
-  tender_published: { subject: "Nuevo paquete de tu oficio en Bidra", action: "Ver el paquete" },
+  tender_published: { subject: "Nuevo paquete de tu sector en Bidra", action: "Ver el paquete" },
   tender_closed: { subject: "Tu puja ha cerrado: ya puedes comparar ofertas", action: "Comparar ofertas" },
   tender_awarded: { subject: "Te han adjudicado un paquete en Bidra", action: "Ver el paquete" },
   tender_not_awarded: { subject: "Resultado de tu puja en Bidra", action: "Ver el paquete" },

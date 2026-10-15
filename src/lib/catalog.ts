@@ -33,7 +33,7 @@ export function reqFor(sector: string, extra: CertId[] = []): CertId[] {
 }
 
 export function unlockTxt(id: CertId): string {
-  if (id === "rea") return "Requisito para todos los oficios";
+  if (id === "rea") return "Requisito para todos los sectores";
   const secs = (Object.keys(SECTOR_REQ) as Sector[]).filter((k) => SECTOR_REQ[k]!.includes(id));
   return secs.length ? "Da acceso a " + secs.join(", ") : "Exigible por promotoras en cada paquete";
 }

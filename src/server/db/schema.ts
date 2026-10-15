@@ -41,7 +41,7 @@ export const companies = pgTable("companies", {
   city: text("city"),
   email: text("email").notNull(),
   annualVolume: text("annual_volume"),
-  /** Oficios del industrial (Sector[]) */
+  /** Sectores del industrial (Sector[]) */
   trades: jsonb("trades").$type<string[]>().notNull().default([]),
   /** Provincia | Comunidad | Nacional */
   radius: text("radius"),

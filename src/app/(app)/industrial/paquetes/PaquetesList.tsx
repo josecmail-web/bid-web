@@ -101,7 +101,7 @@ export function PaquetesList({ tenders, companyName }: { tenders: IndustrialTend
       {shown.length === 0 && (
         <p className="muted">
           {tenders.length === 0
-            ? "No hay paquetes abiertos de tus oficios ahora mismo. Te avisaremos cuando se publique uno."
+            ? "No hay paquetes abiertos de tus sectores ahora mismo. Te avisaremos cuando se publique uno."
             : "No hay paquetes en este filtro."}
         </p>
       )}

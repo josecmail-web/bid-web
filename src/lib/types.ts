@@ -213,7 +213,7 @@ export interface WizardState {
   min: "Cualquiera" | "3+" | "4+" | "4,5+";
   refs: Record<string, string>;
   extra: CertId[];
-  /** titulares del derecho de tanteo (cada uno solo en los paquetes de sus oficios) */
+  /** titulares del derecho de tanteo (cada uno solo en los paquetes de sus sectores) */
   tanteo: TanteoPick[];
 }
 
