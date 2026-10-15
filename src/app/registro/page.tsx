@@ -49,7 +49,7 @@ export default function RegistroPage() {
   const [step, setStep] = useState<Step>("type");
   const [err, setErr] = useState("");
   const [reg, setRegState] = useState<Reg>({
-    type: "", name: "", cif: "", prov: "Valencia", email: "", pass: "",
+    type: "", name: "", cif: "", prov: "", email: "", pass: "",
     kind: "Promotora", vol: "5–20 M€", trades: [], radius: "Provincia", docs: {},
   });
   const set = <K extends keyof Reg>(k: K, v: Reg[K]) => {
@@ -65,6 +65,7 @@ export default function RegistroPage() {
       if (!reg.name.trim()) return "Indica la razón social.";
       const tax = validateTaxId(reg.cif);
       if (!tax.ok) return tax.error;
+      if (!reg.prov) return "Elige una provincia.";
       if (!EMAIL_RE.test(reg.email.trim())) return "Introduce un email válido.";
       const pw = passwordError(reg.pass, reg.email.trim());
       if (pw) return pw;
@@ -172,6 +173,7 @@ export default function RegistroPage() {
               </Field>
               <Field label="Provincia">
                 <select className="input" value={reg.prov} onChange={(e) => set("prov", e.target.value)}>
+                  <option value="" disabled>Elige la provincia</option>
                   {PROVINCES.map((p) => <option key={p}>{p}</option>)}
                 </select>
               </Field>
