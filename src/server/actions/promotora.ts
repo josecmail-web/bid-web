@@ -81,7 +81,8 @@ function sanitize(w: WizardState, companyId: string): WizardState {
     fileName: cut(w.fileName, 200),
     importNote: cut(w.importNote, 300),
     close: cut(w.close, 20),
-    scope: w.scope === "invitacion" ? "invitacion" : "abierta",
+    // Los paquetes por invitación aún no existen (nadie podría verlos): siempre abiertos
+    scope: "abierta",
     min: (["Cualquiera", "3+", "4+", "4,5+"] as const).includes(w.min) ? w.min : "Cualquiera",
     refs: Object.fromEntries(Object.entries(w.refs ?? {}).filter(([k]) => (SECTOR_NAMES as string[]).includes(k)).map(([k, v]) => [k, cut(v, 20)])),
     extra: (Array.isArray(w.extra) ? w.extra : []).filter((x) => EXTRA_CERTS.includes(x)),

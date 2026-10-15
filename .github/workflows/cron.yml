@@ -1,0 +1,21 @@
+# Llama cada 5 minutos a /api/cron (cierre de pujas y avisos a tiempo, plazos de tanteo).
+# Configura en GitHub → Settings → Secrets and variables → Actions:
+#   CRON_URL     p. ej. https://app.bidrapro.com/api/cron
+#   CRON_SECRET  el mismo valor que la variable CRON_SECRET de Railway
+name: cron
+on:
+  schedule:
+    - cron: "*/5 * * * *"
+  workflow_dispatch:
+jobs:
+  tick:
+    runs-on: ubuntu-latest
+    timeout-minutes: 2
+    steps:
+      - name: Llamar a /api/cron
+        env:
+          CRON_URL: ${{ secrets.CRON_URL }}
+          CRON_SECRET: ${{ secrets.CRON_SECRET }}
+        run: |
+          if [ -z "$CRON_URL" ] || [ -z "$CRON_SECRET" ]; then echo "Sin configurar (CRON_URL / CRON_SECRET)"; exit 0; fi
+          curl -fsS --max-time 60 -H "Authorization: Bearer $CRON_SECRET" "$CRON_URL"

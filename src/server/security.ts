@@ -3,11 +3,14 @@ import { headers } from "next/headers";
 import { and, count, desc, eq, gt, isNull } from "drizzle-orm";
 import { getDb, schema as s } from "./db";
 
-/* — IP del cliente (detrás de un proxy, la primera de X-Forwarded-For) — */
-
+/*
+ * — IP del cliente —
+ * Detrás del proxy de Railway: X-Real-IP, o la última entrada de X-Forwarded-For (la que añade el
+ * proxy). La primera la puede inventar el cliente y serviría para saltarse los límites de intentos.
+ */
 export async function clientIp() {
   const h = await headers();
-  return h.get("x-forwarded-for")?.split(",")[0].trim() || h.get("x-real-ip") || "local";
+  return h.get("x-real-ip")?.trim() || h.get("x-forwarded-for")?.split(",").at(-1)?.trim() || "local";
 }
 
 /* — límite de intentos — */
@@ -17,6 +20,8 @@ const LIMITS = {
   login: { windowMin: 15, perEmail: 5, perIp: 30 },
   // peticiones de recuperación por email y por IP, en 1 h
   reset: { windowMin: 60, perEmail: 3, perIp: 10 },
+  // altas de empresa por IP, en 1 h
+  register: { windowMin: 60, perEmail: 3, perIp: 5 },
 } as const;
 
 type Action = keyof typeof LIMITS;

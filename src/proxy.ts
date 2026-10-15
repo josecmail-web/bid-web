@@ -7,9 +7,9 @@ import { NextResponse, type NextRequest } from "next/server";
  */
 /**
  * Ficheros de la app instalable: el navegador los pide sin la contraseña (el manifest, por ejemplo,
- * se descarga sin credenciales), así que quedan fuera. No contienen datos.
+ * se descarga sin credenciales), así que quedan fuera. No contienen datos. /api/cron tiene su propia clave.
  */
-const PUBLIC = /^\/(api\/health|manifest\.webmanifest|sw\.js|offline\.html|icons\/[\w.-]+\.png|icon\.png|apple-icon\.png|bidra-(logo|mark)\.png)$/;
+const PUBLIC = /^\/(api\/health|api\/cron|manifest\.webmanifest|sw\.js|offline\.html|icons\/[\w.-]+\.png|icon\.png|apple-icon\.png|bidra-(logo|mark)\.png)$/;
 
 export function proxy(req: NextRequest) {
   const password = process.env.SITE_PASSWORD;

@@ -115,7 +115,7 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
 
   const summary: [string, string][] = [
     ["Obra", W.obra], ["Ubicación", W.loc], ["Partidas", inc.length + " en " + usedSecs.length + " sectores"],
-    ["Cierre", closeLabel(W.close || null)], ["Participación", W.scope === "abierta" ? "Abierta" : "Por invitación"],
+    ["Cierre", closeLabel(W.close || null)], ["Participación", "Industriales verificados del sector"],
     ["Valoración mínima", W.min], ["Certificados adicionales", W.extra.length ? W.extra.map((x) => CERTS[x].code).join(", ") : "Ninguno"],
     ["Derecho de tanteo", W.tanteo.length ? W.tanteo.map((p) => p.name).join(", ") : "No"],
   ];
@@ -331,16 +331,9 @@ export function Wizard({ initial, projects }: { initial: WizardState; projects: 
                 <input className="input" type="datetime-local" value={W.close} onChange={(e) => setWz("close", e.target.value)} />
               </Field>
             </div>
+            {/* Pendiente: paquetes solo por invitación y filtro por zona de trabajo (ver src/server/eligibility.ts) */}
             <Field label="¿Quién puede pujar?">
-              <div className="stack" style={{ gap: 8 }}>
-                {([["abierta", "Abierta a industriales verificados del sector en la zona"], ["invitacion", "Solo industriales invitados"]] as const).map(([k, label]) => (
-                  <label key={k} className="radio">
-                    <input type="radio" name="scope" checked={W.scope === k} onChange={() => setWz("scope", k)} />
-                    <span className="dot" />
-                    {label}
-                  </label>
-                ))}
-              </div>
+              <span className="small">Todos los industriales verificados del sector que cumplan los requisitos de abajo.</span>
             </Field>
             <Field label="Valoración mínima del industrial">
               <Seg size="sm" options={["Cualquiera", "3+", "4+", "4,5+"] as const} labels={["Cualquiera", "3+ ★", "4+ ★", "4,5+ ★"]} value={W.min} onChange={(v) => setWz("min", v)} />

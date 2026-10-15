@@ -44,14 +44,32 @@ export function isFile(v: FormDataEntryValue | null): v is File {
   return typeof v === "object" && v !== null && "arrayBuffer" in v && (v as File).size > 0;
 }
 
+/** ¿El contenido corresponde a la extensión? (cabecera del fichero; evita p. ej. un HTML renombrado a .pdf) */
+function contentMatches(ext: string, buf: Buffer) {
+  const head = buf.subarray(0, 16);
+  const starts = (...bytes: number[]) => bytes.every((b, i) => head[i] === b);
+  switch (ext) {
+    case "pdf": return head.subarray(0, 5).toString("latin1") === "%PDF-";
+    case "png": return starts(0x89, 0x50, 0x4e, 0x47);
+    case "jpg": case "jpeg": return starts(0xff, 0xd8, 0xff);
+    case "webp": return head.subarray(0, 4).toString("latin1") === "RIFF" && head.subarray(8, 12).toString("latin1") === "WEBP";
+    case "zip": return starts(0x50, 0x4b);
+    case "dwg": return head.subarray(0, 2).toString("latin1") === "AC";
+    case "svg": return /<svg[\s>]/i.test(buf.subarray(0, 4096).toString("utf8"));
+    default: return true; // dxf: texto
+  }
+}
+
 export async function putFile(area: Area, companyId: string, file: File): Promise<string> {
   const ext = (file.name.split(".").pop() ?? "").toLowerCase();
   if (!ALLOWED[area].exts.includes(ext)) throw new UploadError(`${file.name}: debe ser ${ALLOWED[area].label}.`);
   if (file.size > MAX_BYTES) throw new UploadError(`${file.name} supera los 10 MB.`);
+  const buf = Buffer.from(await file.arrayBuffer());
+  if (!contentMatches(ext, buf)) throw new UploadError(`${file.name} no parece un fichero .${ext} válido. Vuelve a exportarlo y súbelo de nuevo.`);
   const key = `${area}/${companyId}/${randomUUID()}.${ext}`;
   const full = path.join(root(), key);
   await mkdir(path.dirname(full), { recursive: true });
-  await writeFile(full, Buffer.from(await file.arrayBuffer()));
+  await writeFile(full, buf);
   return key;
 }
 

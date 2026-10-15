@@ -122,6 +122,10 @@ export async function register(fd: FormData): Promise<ActionResult<{ home: strin
     const radius = RADII.includes(str(fd.get("radius"))) ? str(fd.get("radius")) : "Provincia";
 
     if (str(fd.get("terms")) !== "1") throw new UserError("Acepta las condiciones de uso para continuar.");
+    const ip = await clientIp();
+    const wait = await blockedFor("register", email, ip);
+    if (wait) throw new UserError(`Demasiadas altas seguidas desde esta conexión. Inténtalo dentro de ${wait} min.`);
+    await recordAttempt("register", email, ip, true);
     const docs = requiredDocs(type).map(([k]) => [k, fd.get("doc:" + k)] as const);
     if (docs.some(([, f]) => !isFile(f))) throw new UserError("Faltan documentos por subir.");
 

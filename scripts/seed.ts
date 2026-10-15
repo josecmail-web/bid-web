@@ -8,6 +8,11 @@ import { schema } from "../src/server/db";
 import { count } from "drizzle-orm";
 
 async function main() {
+  // Vacía TODA la base de datos: solo con BID_DEMO=1 explícito (nunca contra producción por descuido)
+  if (process.env.BID_DEMO !== "1") {
+    console.error("db:seed borra todos los datos. Solo se ejecuta con BID_DEMO=1 (base de datos de demo).");
+    process.exit(1);
+  }
   process.env.BID_DEMO = "0"; // evita el sembrado automático al conectar; lo hacemos explícito
   const db = await getDb();
   await resetAndSeed(db);

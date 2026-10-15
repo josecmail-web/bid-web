@@ -21,7 +21,7 @@ Cuentas de demo (contraseña `bid-demo-2026`): `compras@grupolevante.es` (promot
 | Script | |
 | --- | --- |
 | `npm run db:generate` | genera una migración SQL en `drizzle/` tras cambiar `src/server/db/schema.ts` |
-| `npm run db:seed` | vacía y vuelve a sembrar la BD (con el servidor parado si usas PGlite) |
+| `BID_DEMO=1 npm run db:seed` | vacía y vuelve a sembrar la BD de demo (con el servidor parado si usas PGlite; sin BID_DEMO=1 se niega) |
 
 ### Variables de entorno
 

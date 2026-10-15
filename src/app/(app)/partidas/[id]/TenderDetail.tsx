@@ -157,6 +157,17 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
         </div>
       )}
 
+      {!isSealed && T.bids.length === 0 && (
+        <div className="stack" style={{ gap: 6, padding: "16px 18px", border: "1px solid var(--color-divider)", maxWidth: 880 }}>
+          <span className="figure" style={{ fontSize: 20 }}>No se ha recibido ninguna puja</span>
+          <span className="small muted">
+            Ningún industrial verificado de {T.sector} presentó oferta antes del cierre. Puedes volver a publicar las partidas con más plazo o
+            con requisitos menos exigentes (valoración mínima, certificados adicionales).
+          </span>
+          <Link href="/partidas/nueva" className="btn btn-secondary" style={{ alignSelf: "flex-start", marginTop: 4 }}>Publicar de nuevo</Link>
+        </div>
+      )}
+
       {hasBids && (
         <div className="stack" style={{ gap: 16 }}>
           <div className="row between" style={{ gap: 12 }}>
