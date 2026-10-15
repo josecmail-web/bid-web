@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useState, useTransition } from "react";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
 import { useUI } from "@/lib/store";
@@ -23,6 +23,10 @@ export function TenderDetail({ T }: { T: TenderDetailDTO }) {
   const [mode, setMode] = useState<"matrix" | "ranking">("matrix");
   const [sort, setSort] = useState<"price" | "rating">("price");
   const [confirmId, setConfirmId] = useState<string | null>(null);
+  // En el móvil la comparativa por partidas no cabe: se empieza por el ranking
+  useEffect(() => {
+    if (window.matchMedia("(max-width: 640px)").matches) setMode("ranking");
+  }, []);
 
   const [statusLabel, tagClass] = STATUS[T.status];
   const isSealed = T.status === "abierta";

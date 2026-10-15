@@ -5,9 +5,15 @@ import { NextResponse, type NextRequest } from "next/server";
  * útil para la demo pública de las entrevistas. El usuario puede ser cualquiera.
  * En modo demo, además, se pide a los buscadores que no indexen nada.
  */
+/**
+ * Ficheros de la app instalable: el navegador los pide sin la contraseña (el manifest, por ejemplo,
+ * se descarga sin credenciales), así que quedan fuera. No contienen datos.
+ */
+const PUBLIC = /^\/(api\/health|manifest\.webmanifest|sw\.js|offline\.html|icons\/[\w.-]+\.png|icon\.png|apple-icon\.png|bidra-(logo|mark)\.png)$/;
+
 export function proxy(req: NextRequest) {
   const password = process.env.SITE_PASSWORD;
-  if (password && req.nextUrl.pathname !== "/api/health") {
+  if (password && !PUBLIC.test(req.nextUrl.pathname)) {
     const auth = req.headers.get("authorization") ?? "";
     let given = "";
     if (auth.startsWith("Basic ")) {

@@ -350,7 +350,7 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
         )}
         <Blueprint>
           <div className="scroll-x">
-            <table className="table" style={{ minWidth: 720 }}>
+            <table className="table bid-table" style={{ minWidth: 720 }}>
               <thead>
                 <tr>
                   <th style={{ padding: 12 }}>Partida</th>
@@ -370,8 +370,8 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
                           <ItemText d={p.d} long={p.long} />
                         </div>
                       </td>
-                      <td className="r num muted" style={{ padding: "10px 12px" }}>{num(p.q)} {p.u}</td>
-                      <td className="r" style={{ padding: "6px 12px" }}>
+                      <td className="r num muted" data-label="Medición" style={{ padding: "10px 12px" }}>{num(p.q)} {p.u}</td>
+                      <td className="r bid-price" data-label="Precio unitario" style={{ padding: "6px 12px" }}>
                         {editable ? (
                           <div className="row" style={{ gap: 6, justifyContent: "flex-end", flexWrap: "nowrap" }}>
                             <input
@@ -390,13 +390,13 @@ export function BidForm({ T }: { T: IndustrialTenderDTO }) {
                           <span className="num">{T.myPrices ? eur2(T.myPrices[i]) + " / " + p.u : "—"}</span>
                         )}
                       </td>
-                      <td className="r num" style={{ padding: "10px 12px", fontWeight: 500 }}>
+                      <td className="r num" data-label="Importe" style={{ padding: "10px 12px", fontWeight: 500 }}>
                         {editable ? (valid[i] ? eur(amounts[i]) : "—") : T.myPrices ? eur(T.myPrices[i] * p.q) : "—"}
                       </td>
                     </tr>
                   );
                 })}
-                <tr>
+                <tr className="bid-total">
                   <td className="figure" style={{ padding: "14px 12px", fontSize: 18, borderTop: "1px solid var(--color-divider)" }}>Total sin IVA</td>
                   <td style={{ borderTop: "1px solid var(--color-divider)" }} />
                   <td className="r xs muted" style={{ padding: "14px 12px", borderTop: "1px solid var(--color-divider)" }}>

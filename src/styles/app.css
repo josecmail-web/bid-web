@@ -193,3 +193,44 @@ html.fonts { --font-heading: var(--font-bc), "Barlow Condensed", system-ui, sans
 /* logo de la cabecera */
 .app-logo { height: 34px; width: auto; display: block; }
 @media (max-width: 560px) { .app-logo { height: 28px; } }
+
+/* — móvil: cabecera compacta — */
+@media (max-width: 560px) {
+  .app-header { display: grid; grid-template-columns: auto 1fr; gap: 8px 12px; padding: 10px 16px 0; position: static; }
+  .app-header > a:first-child { grid-row: 1; grid-column: 1; }
+  .app-actions { grid-row: 1; grid-column: 2; justify-content: flex-end; gap: 8px !important; flex-wrap: nowrap; min-width: 0; }
+  .app-actions .account-link { min-width: 0; max-width: 110px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  .app-actions .btn-ghost { padding-left: 4px; padding-right: 4px; }
+  .app-demo { grid-column: 1 / -1; }
+  .app-nav { grid-column: 1 / -1; flex-wrap: nowrap; overflow-x: auto; margin: 0 -16px; padding: 0 8px; scrollbar-width: none; }
+  .app-nav::-webkit-scrollbar { display: none; }
+}
+.app-right { display: flex; flex-wrap: wrap; align-items: center; gap: 12px; margin-left: auto; }
+@media (max-width: 560px) {
+  .app-right { display: contents; }
+}
+
+/* — móvil: presupuesto del industrial como tarjetas (una por partida, con el precio a la vista) — */
+@media (max-width: 640px) {
+  .bid-table { min-width: 0 !important; }
+  .bid-table thead { display: none; }
+  .bid-table, .bid-table tbody { display: block; }
+  .bid-table tr { display: grid; grid-template-columns: 1fr 1fr; padding: 12px 0; border-bottom: 1px solid var(--color-divider); }
+  .bid-table td, .bid-table td.r { display: block; padding: 2px 12px !important; border: 0 !important; text-align: left; }
+  .bid-table td:first-child { grid-column: 1 / -1; padding-bottom: 8px !important; }
+  .bid-table td[data-label]::before { content: attr(data-label); display: block; font-size: 11px; letter-spacing: .08em; text-transform: uppercase; color: var(--color-neutral-600); font-weight: 400; }
+  .bid-table td.bid-price { grid-column: 1 / -1; order: 3; padding-top: 8px !important; }
+  .bid-table td.bid-price .row { justify-content: flex-start !important; }
+  .bid-table td.bid-price input { width: 100% !important; max-width: 200px; min-height: 40px !important; font-size: 16px; }
+  .bid-table td.r[data-label="Importe"] { text-align: right; }
+  .bid-table tr.bid-total { grid-template-columns: 1fr auto; align-items: end; border-bottom: 0; }
+  .bid-table tr.bid-total td:first-child { grid-column: 1; }
+  .bid-table tr.bid-total td:empty { display: none; }
+  .bid-table tr.bid-total td:nth-child(3) { grid-column: 1; grid-row: 2; }
+  .bid-table tr.bid-total td.r:last-child { grid-column: 2; grid-row: 1 / span 2; text-align: right; }
+}
+
+/* iPhone hace zoom al escribir en campos de menos de 16 px */
+@media (max-width: 560px) {
+  .input, select, textarea { font-size: 16px; }
+}

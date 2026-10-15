@@ -38,50 +38,54 @@ export function AppShell({ user, notifications, children }: { user: ShellUser; n
           {/* eslint-disable-next-line @next/next/no-img-element */}
           <img src="/bidra-logo.png" alt="Bidra Pro" className="app-logo" />
         </Link>
-        <nav className="row" style={{ gap: 2 }}>
+        <nav className="row app-nav" style={{ gap: 2 }}>
           {nav.map(([href, label]) => (
             <Link key={href} href={href} className="tabbtn" aria-current={href === active ? "page" : undefined}>
               {label}
             </Link>
           ))}
         </nav>
-        <div className="row" style={{ marginLeft: "auto", gap: 12 }}>
+        <div className="app-right">
           {user.demo && (
-            <Seg
-              size="xs"
-              ariaLabel="Rol (demo)"
-              options={["promotora", "industrial", "admin"] as const}
-              labels={["Promotora", "Industrial", "Admin"]}
-              value={user.role}
-              onChange={(r) =>
+            <div className="app-demo">
+              <Seg
+                size="xs"
+                ariaLabel="Rol (demo)"
+                options={["promotora", "industrial", "admin"] as const}
+                labels={["Promotora", "Industrial", "Admin"]}
+                value={user.role}
+                onChange={(r) =>
+                  start(async () => {
+                    const res = await demoLogin(r);
+                    if (!res.ok) return flash(res.error);
+                    openProfile(null);
+                    router.push(res.home);
+                  })
+                }
+              />
+            </div>
+          )}
+          <div className="row app-actions" style={{ gap: 12 }}>
+            {/* key: al cambiar de usuario (demo) la campana arranca con sus avisos */}
+            {notifications && <NotificationBell key={user.email} initial={notifications} />}
+            <Link href="/cuenta" className="account-link" title="Tu cuenta y equipo" aria-current={path === "/cuenta" ? "page" : undefined}>
+              {user.companyName}
+            </Link>
+            <button
+              className="btn btn-ghost"
+              disabled={pending}
+              onClick={() =>
                 start(async () => {
-                  const res = await demoLogin(r);
-                  if (!res.ok) return flash(res.error);
+                  await logout();
                   openProfile(null);
-                  router.push(res.home);
+                  router.replace("/login");
+                  router.refresh();
                 })
               }
-            />
-          )}
-          {/* key: al cambiar de usuario (demo) la campana arranca con sus avisos */}
-          {notifications && <NotificationBell key={user.email} initial={notifications} />}
-          <Link href="/cuenta" className="account-link" title="Tu cuenta y equipo" aria-current={path === "/cuenta" ? "page" : undefined}>
-            {user.companyName}
-          </Link>
-          <button
-            className="btn btn-ghost"
-            disabled={pending}
-            onClick={() =>
-              start(async () => {
-                await logout();
-                openProfile(null);
-                router.replace("/login");
-                router.refresh();
-              })
-            }
-          >
-            Salir
-          </button>
+            >
+              Salir
+            </button>
+          </div>
         </div>
       </header>
       {user.verification && user.verification !== "approved" && (

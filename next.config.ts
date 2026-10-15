@@ -6,6 +6,8 @@ const nextConfig: NextConfig = {
   // Cabeceras de seguridad para todas las rutas. (CSP estricta pendiente: Next usa scripts inline.)
   async headers() {
     return [
+      // El service worker siempre se revisa (para que las versiones nuevas lleguen enseguida)
+      { source: "/sw.js", headers: [{ key: "Cache-Control", value: "no-cache" }] },
       {
         source: "/:path*",
         headers: [
