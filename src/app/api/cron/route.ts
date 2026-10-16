@@ -1,5 +1,5 @@
 import { timingSafeEqual } from "node:crypto";
-import { lt, or, sql } from "drizzle-orm";
+import { lt, or } from "drizzle-orm";
 import { getDb, schema as s } from "@/server/db";
 import { closeExpired } from "@/server/queries";
 
@@ -19,10 +19,23 @@ export async function GET(req: Request) {
   if (a.length !== b.length || !timingSafeEqual(a, b)) return new Response("No autorizado", { status: 401 });
 
   const db = await getDb();
-  await closeExpired(db);
   const month = new Date(Date.now() - 30 * 864e5);
-  await db.delete(s.authAttempts).where(lt(s.authAttempts.createdAt, month));
-  await db.delete(s.authTokens).where(or(lt(s.authTokens.expiresAt, month), sql`${s.authTokens.usedAt} < ${month}`));
-  await db.delete(s.sessions).where(lt(s.sessions.expiresAt, new Date()));
-  return Response.json({ ok: true, at: new Date().toISOString() });
+  // Cada tarea por separado: un fallo en la limpieza no puede impedir que se cierren las pujas
+  const tasks: [string, () => Promise<unknown>][] = [
+    ["cierres y tanteo", () => closeExpired(db)],
+    ["intentos de acceso", () => db.delete(s.authAttempts).where(lt(s.authAttempts.createdAt, month))],
+    // Fechas siempre con lt()/gt() de Drizzle: en sql`` a mano, Postgres (postgres-js) no acepta un Date
+    ["enlaces caducados", () => db.delete(s.authTokens).where(or(lt(s.authTokens.expiresAt, month), lt(s.authTokens.usedAt, month)))],
+    ["sesiones caducadas", () => db.delete(s.sessions).where(lt(s.sessions.expiresAt, new Date()))],
+  ];
+  const failed: string[] = [];
+  for (const [name, run] of tasks) {
+    try {
+      await run();
+    } catch (e) {
+      console.error(`[cron] ${name}:`, e);
+      failed.push(name);
+    }
+  }
+  return Response.json({ ok: !failed.length, failed, at: new Date().toISOString() }, { status: failed.length ? 500 : 200 });
 }
