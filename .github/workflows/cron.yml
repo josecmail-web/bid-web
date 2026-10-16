@@ -18,4 +18,14 @@ jobs:
           CRON_SECRET: ${{ secrets.CRON_SECRET }}
         run: |
           if [ -z "$CRON_URL" ] || [ -z "$CRON_SECRET" ]; then echo "Sin configurar (CRON_URL / CRON_SECRET)"; exit 0; fi
-          curl -fsS --max-time 60 -H "Authorization: Bearer $CRON_SECRET" "$CRON_URL"
+          # Sin espacios ni saltos de línea sobrantes al pegar los secretos
+          url="$(printf '%s' "$CRON_URL" | tr -d '[:space:]')"
+          key="$(printf '%s' "$CRON_SECRET" | tr -d '[:space:]')"
+          code=$(curl -sS --max-time 60 -o respuesta.txt -w '%{http_code}' -H "Authorization: Bearer $key" "$url" || echo "sin conexión")
+          echo "Respuesta HTTP: $code"; cat respuesta.txt 2>/dev/null; echo
+          case "$code" in
+            200) ;;
+            401) echo "::error::La clave no coincide: CRON_SECRET de GitHub debe ser igual que la de Railway (bidra-produccion)."; exit 1 ;;
+            404) echo "::error::$url no tiene CRON_SECRET configurada (o la URL apunta a otra instalación)."; exit 1 ;;
+            *) echo "::error::Fallo al llamar a $url"; exit 1 ;;
+          esac
